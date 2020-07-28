@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "com.yyon.grapplinghook.mixins",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+  ],
+  "client": [
+    "BlockBreakMixin",
+    "GrappleEnchantsFeet",
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
