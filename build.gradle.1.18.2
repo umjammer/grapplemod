@@ -141,6 +141,8 @@ repositories {
     // Put repositories for dependencies here
     // ForgeGradle automatically adds the Forge maven and Maven Central for you
 
+        maven { url "https://maven.shedaniel.me/" }
+
     // If you have mod jar dependencies in ./libs, you can declare them as a repository like so:
     // flatDir {
     //     dir 'libs'
@@ -164,6 +166,8 @@ dependencies {
     // For more info...
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
+
+    implementation "me.shedaniel.cloth:cloth-config-forge:6.2.57"
 }
 
 // Example for how to get properties into the manifest for reading at runtime.
