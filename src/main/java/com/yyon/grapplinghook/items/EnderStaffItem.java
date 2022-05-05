@@ -19,7 +19,7 @@ package com.yyon.grapplinghook.items;
 
 import java.util.List;
 
-import com.yyon.grapplinghook.client.ClientProxy.McKeys;
+import com.yyon.grapplinghook.client.ClientProxyInterface.McKeys;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;

@@ -3,6 +3,8 @@ package com.yyon.grapplinghook.controllers;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.yyon.grapplinghook.client.ClientProxyInterface.GrappleKeys;
+import com.yyon.grapplinghook.client.ClientProxyInterface.McKeys;
 import com.yyon.grapplinghook.config.GrappleConfig;
 import com.yyon.grapplinghook.entities.grapplehook.GrapplehookEntity;
 import com.yyon.grapplinghook.grapplemod;
@@ -22,7 +24,6 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.World;
-import com.yyon.grapplinghook.client.ClientProxy.*;
 
 import static com.yyon.grapplinghook.client.ClientSetup.clientProxy;
 

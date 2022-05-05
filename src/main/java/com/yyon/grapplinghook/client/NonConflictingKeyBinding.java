@@ -1,35 +1,30 @@
 package com.yyon.grapplinghook.client;
 
+import com.yyon.grapplinghook.utils.key.IKeyConflictContext;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 
+// TODO
 public class NonConflictingKeyBinding extends KeyBinding {
-
-	interface IKeyConflictContext {
-		boolean isActive();
-		boolean conflicts(IKeyConflictContext other);
-	}
 
 	public NonConflictingKeyBinding(String description, int keyCode, String category) {
 		super(description, keyCode, category);
 		this.setNonConflict();
 	}
 
-	IKeyConflictContext keyConflictContext;
-
 	boolean isActive = false;
 
 	private void setNonConflict() {
-		this.keyConflictContext = new IKeyConflictContext() {
-			@Override
-			public boolean isActive() {
-				return false;
-			}
-			@Override
-			public boolean conflicts(IKeyConflictContext other) {
-				return false;
-			}
-		};
+//		this.setKeyConflictContext(new IKeyConflictContext() {
+//			@Override
+//			public boolean isActive() {
+//				return false;
+//			}
+//			@Override
+//			public boolean conflicts(IKeyConflictContext other) {
+//				return false;
+//			}
+//		});
 	}
 
 	public NonConflictingKeyBinding(String description, InputUtil.Type type, int keyCode, String category) {

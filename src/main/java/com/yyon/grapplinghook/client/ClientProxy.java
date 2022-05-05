@@ -37,26 +37,17 @@ import static com.yyon.grapplinghook.client.ClientSetup.clientControllerManager;
 import static com.yyon.grapplinghook.grapplemod.MODID;
 
 
-public class ClientProxy {
+public class ClientProxy implements ClientProxyInterface {
 
 	public static final Identifier doubleJumpSoundLoc = new Identifier(MODID, "doublejump");
 	public static final Identifier slideSoundLoc = new Identifier(MODID, "slide");
 
+	@Override
 	public void startRocket(PlayerEntity player, GrappleCustomization custom) {
 		clientControllerManager.startRocket(player, custom);
 	}
 
-	public enum McKeys {
-		keyBindUseItem,
-		keyBindForward,
-		keyBindLeft,
-		keyBindBack,
-		keyBindRight,
-		keyBindJump,
-		keyBindSneak,
-		keyBindAttack
-	}
-
+	@Override
 	public String getKeyname(McKeys keyenum) {
 		KeyBinding binding = null;
 
@@ -94,18 +85,22 @@ public class ClientProxy {
 		}
 	}
 
+	@Override
 	public void openModifierScreen(TileEntityGrappleModifier tileent) {
 		MinecraftClient.getInstance().setScreen(new GuiModifier(tileent));
 	}
 
+	@Override
 	public void playSlideSound(Entity entity) {
 		this.playSound(slideSoundLoc, GrappleConfig.getClientConf().sounds.slide_sound_volume);
 	}
 
+	@Override
 	public void playDoubleJumpSound(Entity entity) {
 		this.playSound(doubleJumpSoundLoc, GrappleConfig.getClientConf().sounds.doublejump_sound_volume * 0.7F);
 	}
 
+	@Override
 	public void playWallrunJumpSound(Entity entity) {
 		this.playSound(doubleJumpSoundLoc, GrappleConfig.getClientConf().sounds.wallrunjump_sound_volume * 0.7F);
 	}
@@ -114,6 +109,7 @@ public class ClientProxy {
 
 	RecipeType<Recipe<PlayerInventory>> grapplehookRecipeType;
 
+	@Override
 	public void fillGrappleVariants(ItemGroup tab, List<ItemStack> items) {
 		if (!MinecraftClient.getInstance().isRunning() || MinecraftClient.getInstance().player == null || MinecraftClient.getInstance().player.world == null || MinecraftClient.getInstance().player.world.getRecipeManager() == null) {
 			return;
@@ -147,50 +143,43 @@ public class ClientProxy {
 		return AutoConfig.getConfigScreen(GrappleConfig.class, screen).get();
 	}
 
+	@Override
 	public void resetLauncherTime(int playerid) {
 		clientControllerManager.resetLauncherTime(playerid);
 	}
 
+	@Override
 	public void launchPlayer(PlayerEntity player) {
 		clientControllerManager.launchPlayer(player);
 	}
 
+	@Override
 	public void updateRocketRegen(double rocket_active_time, double rocket_refuel_ratio) {
 		clientControllerManager.updateRocketRegen(rocket_active_time, rocket_refuel_ratio);
 	}
 
+	@Override
 	public double getRocketFunctioning() {
 		return clientControllerManager.getRocketFunctioning();
 	}
 
+	@Override
 	public boolean isWallRunning(Entity entity, Vec motion) {
 		return clientControllerManager.isWallRunning(entity, motion);
 	}
 
+	@Override
 	public boolean isSliding(Entity entity, Vec motion) {
 		return clientControllerManager.isSliding(entity, motion);
 	}
 
+	@Override
 	public GrappleController createControl(int id, int hookEntityId, int entityid, World world, Vec pos, BlockPos blockpos,
 										   GrappleCustomization custom) {
 		return clientControllerManager.createControl(id, hookEntityId, entityid, world, pos, blockpos, custom);
 	}
 
-	public enum GrappleKeys {
-		key_boththrow,
-		key_leftthrow,
-		key_rightthrow,
-		key_motoronoff,
-		key_jumpanddetach,
-		key_slow,
-		key_climb,
-		key_climbup,
-		key_climbdown,
-		key_enderlaunch,
-		key_rocket,
-		key_slide
-	}
-
+	@Override
 	public boolean isKeyDown(GrappleKeys key) {
 		if (key == GrappleKeys.key_boththrow) {return ClientSetup.key_boththrow.isPressed();}
 		else if (key == GrappleKeys.key_leftthrow) {return ClientSetup.key_leftthrow.isPressed();}
@@ -207,18 +196,22 @@ public class ClientProxy {
 		return false;
 	}
 
+	@Override
 	public GrappleController unregisterController(int entityId) {
 		return ClientControllerManager.unregisterController(entityId);
 	}
 
+	@Override
 	public double getTimeSinceLastRopeJump(World world) {
 		return GrapplemodUtils.getTime(world) - ClientControllerManager.prevRopeJumpTime;
 	}
 
+	@Override
 	public void resetRopeJumpTime(World world) {
 		ClientControllerManager.prevRopeJumpTime = GrapplemodUtils.getTime(world);
 	}
 
+	@Override
 	public boolean isKeyDown(McKeys keyenum) {
 		if (keyenum == McKeys.keyBindAttack) {
 			return MinecraftClient.getInstance().options.attackKey.isPressed();
@@ -240,6 +233,7 @@ public class ClientProxy {
 		return false;
 	}
 
+	@Override
 	public boolean isMovingSlowly(Entity entity) {
 		if (entity instanceof PlayerEntity playerEntity) {
 			return playerEntity.hasStatusEffect(StatusEffects.SLOW_FALLING); // TODO
@@ -247,15 +241,18 @@ public class ClientProxy {
 		return false;
 	}
 
+	@Override
 	public void playSound(Identifier loc, float volume) {
 		PlayerEntity player = MinecraftClient.getInstance().player;
 		MinecraftClient.getInstance().getSoundManager().play(new PositionedSoundInstance(loc, SoundCategory.PLAYERS, volume, 1.0F, false, 0, SoundInstance.AttenuationType.NONE, player.getX(), player.getY(), player.getZ(), false));
 	}
 
+	@Override
 	public int getWallrunTicks() {
 		return clientControllerManager.ticksWallRunning;
 	}
 
+	@Override
 	public void setWallrunTicks(int newWallrunTicks) {
 		clientControllerManager.ticksWallRunning = newWallrunTicks;
 	}
