@@ -3,31 +3,28 @@ package com.yyon.grapplinghook.blocks.modifierblock;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.yyon.grapplinghook.client.ClientProxyInterface;
 import com.yyon.grapplinghook.utils.GrappleCustomization;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.CheckboxWidget;
+import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.gui.widget.SliderWidget;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.item.ItemStack;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Identifier;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.components.AbstractSliderButton;
-import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.Button.OnPress;
-import net.minecraft.client.gui.components.Checkbox;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
-import net.minecraft.world.item.ItemStack;
 
 public class GuiModifier extends Screen {
-	private static final ResourceLocation texture = new ResourceLocation("grapplemod",
-			"textures/gui/guimodifier_bg.png");
+	private static final Identifier texture = new Identifier("grapplemod",
+			"gui/guimodifier_bg");
 
 	int xSize = 221;
 	int ySize = 221;
@@ -37,7 +34,7 @@ public class GuiModifier extends Screen {
 
 	int posy;
 	int id;
-	HashMap<AbstractWidget, String> options;
+	Map<ClickableWidget, String> options;
 
 	TileEntityGrappleModifier tileEnt;
 	GrappleCustomization customization;
@@ -45,7 +42,7 @@ public class GuiModifier extends Screen {
 	GrappleCustomization.upgradeCategories category = null;
 
 	public GuiModifier(TileEntityGrappleModifier tileent) {
-		super(new TextComponent(ClientProxyInterface.proxy.localize("grapplemodifier.title.desc")));
+		super(new TranslatableText("grapplemodifier.title.desc"));
 
 		this.tileEnt = tileent;
 		customization = tileent.customization;
@@ -58,15 +55,15 @@ public class GuiModifier extends Screen {
 
 		mainScreen();
 	}
-	
-	class PressCategory implements OnPress {
+
+	class PressCategory implements ButtonWidget.PressAction {
 		GrappleCustomization.upgradeCategories category;
 		public PressCategory(GrappleCustomization.upgradeCategories category) {
 			this.category = category;
 		}
-		
-		public void onPress(Button p_onPress_1_) {
-			boolean unlocked = tileEnt.isUnlocked(category) || Minecraft.getInstance().player.isCreative();
+
+		public void onPress(ButtonWidget w) {
+			boolean unlocked = tileEnt.isUnlocked(category) || MinecraftClient.getInstance().player.isCreative();
 
 			if (unlocked) {
 				showCategoryScreen(category);
@@ -75,34 +72,25 @@ public class GuiModifier extends Screen {
 			}
 		}
 	}
-	
-	class PressBack implements OnPress {
-		public void onPress(Button p_onPress_1_) {
+
+	class PressBack implements ButtonWidget.PressAction {
+		public void onPress(ButtonWidget p_onPress_1_) {
 			mainScreen();
 		}
 	}
+
 	public void mainScreen() {
 		clearScreen();
 
-		this.addRenderableWidget(new Button(this.guiLeft + 10, this.guiTop + this.ySize - 20 - 10,
-			50, 20, new TextComponent(ClientProxyInterface.proxy.localize("grapplemodifier.close.desc")), new OnPress() {
-				public void onPress(Button p_onPress_1_) {
-					onClose();
-				}
+		this.addDrawableChild(new ButtonWidget(this.guiLeft + 10, this.guiTop + this.ySize - 20 - 10,
+			50, 20, new TranslatableText("grapplemodifier.close.desc"), p_onPress_1_ -> close()));
+		this.addDrawableChild(new ButtonWidget(this.guiLeft + this.xSize - 50 - 10, this.guiTop + this.ySize - 20 - 10,
+			50, 20, new TranslatableText("grapplemodifier.reset.desc"), p_onPress_1_ -> {
+				customization = new GrappleCustomization();
+				mainScreen();
 			}));
-		this.addRenderableWidget(new Button(this.guiLeft + this.xSize - 50 - 10, this.guiTop + this.ySize - 20 - 10,
-			50, 20, new TextComponent(ClientProxyInterface.proxy.localize("grapplemodifier.reset.desc")), new OnPress() {
-				public void onPress(Button p_onPress_1_) {
-					customization = new GrappleCustomization();
-					mainScreen();
-				}
-			}));
-		this.addRenderableWidget(new Button(this.guiLeft + 10 + 75, this.guiTop + this.ySize - 20 - 10,
-			50, 20, new TextComponent(ClientProxyInterface.proxy.localize("grapplemodifier.helpbutton.desc")), new OnPress() {
-				public void onPress(Button p_onPress_1_) {
-					helpScreen();
-				}
-			}));
+		this.addDrawableChild(new ButtonWidget(this.guiLeft + 10 + 75, this.guiTop + this.ySize - 20 - 10,
+			50, 20, new TranslatableText("grapplemodifier.helpbutton.desc"), p_onPress_1_ -> helpScreen()));
 
 		int y = 0;
 		int x = 0;
@@ -113,35 +101,38 @@ public class GuiModifier extends Screen {
 					y = 0;
 					x += 1;
 				}
-				this.addRenderableWidget(
-						new Button(this.guiLeft + 10 + 105*x, this.guiTop + 15 + 30 * y, 95, 20, new TextComponent(category.getName()), new PressCategory(category)));
+				this.addDrawableChild(
+						new ButtonWidget(this.guiLeft + 10 + 105*x, this.guiTop + 15 + 30 * y, 95, 20, Text.of(category.getName()), new PressCategory(category)));
 				y += 1;
 			}
 		}
 
-		this.addRenderableWidget(new TextWidget(new TextComponent(ClientProxyInterface.proxy.localize("grapplemodifier.apply.desc")), this.guiLeft + 10, this.guiTop + this.ySize - 20 - 10 - 10));
+		this.addDrawableChild(new TextWidget(new TranslatableText("grapplemodifier.apply.desc"), this.guiLeft + 10, this.guiTop + this.ySize - 20 - 10 - 10));
 	}
 
-	class BackgroundWidget extends AbstractWidget {
-		public BackgroundWidget(int p_i232254_1_, int p_i232254_2_, int p_i232254_3_, int p_i232254_4_,
-				Component p_i232254_5_) {
-			super(p_i232254_1_, p_i232254_2_, p_i232254_3_, p_i232254_4_, p_i232254_5_);
+	static class BackgroundWidget extends ClickableWidget {
+		public BackgroundWidget(int x, int y, int width, int height, Text text) {
+			super(x, y, width, height, text);
 			this.active = false;
 		}
-		
+
 		public BackgroundWidget(int x, int y, int w, int h) {
-			this(x, y, w, h, new TextComponent(""));
+			this(x, y, w, h, Text.of(""));
 		}
-		
-	   public void renderButton(PoseStack p_230431_1_, int p_230431_2_, int p_230431_3_, float p_230431_4_) {
-		RenderSystem.setShaderTexture(0,texture);
-		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-		this.blit(p_230431_1_, this.x, this.y, 0, 0, this.width, this.height);
-	   }
+
+		public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+			RenderSystem.setShaderTexture(0, texture);
+			RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+			this.drawTexture(matrices, this.x, this.y, 0, 0, this.width, this.height);
+		}
 
 		@Override
-		public void updateNarration(NarrationElementOutput narrationElementOutput) {
-			
+		public SelectionType getType() {
+			return null;
+		}
+
+		@Override
+		public void appendNarrations(NarrationMessageBuilder builder) {
 		}
 	}
 
@@ -150,115 +141,117 @@ public class GuiModifier extends Screen {
 		posy = 10;
 		id = 10;
 		options = new HashMap<>();
-		this.clearWidgets();
-		
-		this.addRenderableWidget(new BackgroundWidget(this.guiLeft, this.guiTop, this.xSize, this.ySize));
+		this.clearChildren();
+
+		this.addDrawableChild(new BackgroundWidget(this.guiLeft, this.guiTop, this.xSize, this.ySize));
 	}
-	
-	class TextWidget extends AbstractWidget {
-		public TextWidget(int p_i232254_1_, int p_i232254_2_, int p_i232254_3_, int p_i232254_4_,
-				Component p_i232254_5_) {
-			super(p_i232254_1_, p_i232254_2_, p_i232254_3_, p_i232254_4_, p_i232254_5_);
+
+	static class TextWidget extends ClickableWidget {
+		public TextWidget(int x, int y, int width, int height, Text text) {
+			super(x, y, width, height, text);
 		}
-		
-		public TextWidget(Component text, int x, int y) {
+
+		public TextWidget(Text text, int x, int y) {
 			this(x, y, 50, 15 * text.getString().split("\n").length + 5, text);
 		}
-		
-	   public void renderButton(PoseStack p_230431_1_, int p_230431_2_, int p_230431_3_, float p_230431_4_) {
-	      Minecraft minecraft = Minecraft.getInstance();
-	      Font fontrenderer = minecraft.font;
-	      RenderSystem.setShaderTexture(0,WIDGETS_LOCATION);
-	      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
-	      RenderSystem.enableBlend();
-	      RenderSystem.defaultBlendFunc();
-	      RenderSystem.enableDepthTest();
-	      int j = this.getFGColor();
-	      int lineno = 0;
-	      for (String s : this.getMessage().getString().split("\n")) {
-		      drawString(p_230431_1_, fontrenderer, new TextComponent(s), this.x, this.y + lineno*15, j | Mth.ceil(this.alpha * 255.0F) << 24);
-	    	  lineno++;
-	      }
-	   }
+
+		public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+			MinecraftClient minecraft = MinecraftClient.getInstance();
+			TextRenderer fontrenderer = minecraft.textRenderer;
+			RenderSystem.setShaderTexture(0, WIDGETS_TEXTURE);
+			RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
+			RenderSystem.enableBlend();
+			RenderSystem.defaultBlendFunc();
+			RenderSystem.enableDepthTest();
+			int j = this.getMessage().getStyle().getColor().getRgb();
+			int lineno = 0;
+			for (String s : this.getMessage().getString().split("\n")) {
+				drawTextWithShadow(matrices, fontrenderer, Text.of(s), this.x, this.y + lineno * 15, j | (int) Math.ceil(this.alpha * 255.0F) << 24);
+				lineno++;
+			}
+		}
 
 		@Override
-		public void updateNarration(NarrationElementOutput narrationElementOutput) {
-			
+		public SelectionType getType() {
+			return null;
+		}
+
+		@Override
+		public void appendNarrations(NarrationMessageBuilder builder) {
 		}
 	}
 
 	public void notAllowedScreen(GrappleCustomization.upgradeCategories category) {
 		clearScreen();
 
-		this.addRenderableWidget(new Button(this.guiLeft + 10, this.guiTop + this.ySize - 20 - 10, 50, 20, new TextComponent(ClientProxyInterface.proxy.localize("grapplemodifier.back.desc")), new PressBack()));
+		this.addDrawableChild(new ButtonWidget(this.guiLeft + 10, this.guiTop + this.ySize - 20 - 10, 50, 20, new TranslatableText("grapplemodifier.back.desc"), new PressBack()));
 		this.category = category;
-		this.addRenderableWidget(new TextWidget(new TextComponent(ClientProxyInterface.proxy.localize("grapplemodifier.unlock1.desc")), this.guiLeft + 10, this.guiTop + 10));
-		this.addRenderableWidget(new TextWidget(new TextComponent(this.category.getName()), this.guiLeft + 10, this.guiTop + 25));
-		this.addRenderableWidget(new TextWidget(new TextComponent(ClientProxyInterface.proxy.localize("grapplemodifier.unlock2.desc")), this.guiLeft + 10, this.guiTop + 40));
-		this.addRenderableWidget(new TextWidget(new TextComponent(ClientProxyInterface.proxy.localize("grapplemodifier.unlock3.desc")), this.guiLeft + 10, this.guiTop + 55));
-		this.addRenderableWidget(new TextWidget(new ItemStack(this.category.getItem()).getDisplayName(), this.guiLeft + 10, this.guiTop + 70));
-		this.addRenderableWidget(new TextWidget(new TextComponent(ClientProxyInterface.proxy.localize("grapplemodifier.unlock4.desc")), this.guiLeft + 10, this.guiTop + 85));
+		this.addDrawableChild(new TextWidget(new TranslatableText("grapplemodifier.unlock1.desc"), this.guiLeft + 10, this.guiTop + 10));
+		this.addDrawableChild(new TextWidget(Text.of(this.category.getName()), this.guiLeft + 10, this.guiTop + 25));
+		this.addDrawableChild(new TextWidget(new TranslatableText("grapplemodifier.unlock2.desc"), this.guiLeft + 10, this.guiTop + 40));
+		this.addDrawableChild(new TextWidget(new TranslatableText("grapplemodifier.unlock3.desc"), this.guiLeft + 10, this.guiTop + 55));
+		this.addDrawableChild(new TextWidget(new ItemStack(this.category.getItem()).getName(), this.guiLeft + 10, this.guiTop + 70));
+		this.addDrawableChild(new TextWidget(new TranslatableText("grapplemodifier.unlock4.desc"), this.guiLeft + 10, this.guiTop + 85));
 	}
 
 	public void helpScreen() {
 		clearScreen();
 
-		this.addRenderableWidget(new Button(this.guiLeft + 10, this.guiTop + this.ySize - 20 - 10, 50, 20, new TextComponent(ClientProxyInterface.proxy.localize("grapplemodifier.back.desc")), new PressBack()));
+		this.addDrawableChild(new ButtonWidget(this.guiLeft + 10, this.guiTop + this.ySize - 20 - 10, 50, 20, new TranslatableText("grapplemodifier.back.desc"), new PressBack()));
 
-		this.addRenderableWidget(new TextWidget(new TextComponent(ClientProxyInterface.proxy.localize("grapplemodifier.help.desc")), this.guiLeft + 10, this.guiTop + 10));
-		
+		this.addDrawableChild(new TextWidget(new TranslatableText("grapplemodifier.help.desc"), this.guiLeft + 10, this.guiTop + 10));
 	}
-	
-	class GuiCheckbox extends Checkbox {
+
+	class GuiCheckbox extends CheckboxWidget {
 		String option;
-		public Component tooltip;
+		public Text tooltip;
 
 		public GuiCheckbox(int x, int y, int w, int h,
-				Component text, boolean val, String option, Component tooltip) {
+						   Text text, boolean val, String option, Text tooltip) {
 			super(x, y, w, h, text, val);
 			this.option = option;
 			this.tooltip = tooltip;
 		}
-		
+
 		@Override
 		public void onPress() {
 			super.onPress();
-			
-			customization.setBoolean(option, this.selected());
-			
+
+			customization.setBoolean(option, this.isChecked());
+
 			updateEnabled();
 		}
-		
+
 		@Override
-		public void renderButton(PoseStack p_230431_1_, int p_230431_2_, int p_230431_3_, float p_230431_4_) {
-			super.renderButton(p_230431_1_, p_230431_2_, p_230431_3_, p_230431_4_);
-			
-			if (this.isHovered) {
+		public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+			super.renderButton(matrices, mouseX, mouseY, delta);
+
+			if (this.isHovered()) {
 				String tooltiptext = tooltip.getString();
-				ArrayList<Component> lines = new ArrayList<Component>();
+				List<Text> lines = new ArrayList<Text>();
 				for (String line : tooltiptext.split("\n")) {
-					lines.add(new TextComponent(line));
+					lines.add(Text.of(line));
 				}
-				renderTooltip(p_230431_1_, lines, Optional.empty(), p_230431_2_, p_230431_3_);
+				renderTooltip(matrices, mouseX, mouseY);
 			}
 		}
 	}
 
 	public void addCheckbox(String option) {
-		String text = ClientProxyInterface.proxy.localize(this.customization.getName(option));
-		String desc = ClientProxyInterface.proxy.localize(this.customization.getDescription(option));
-		GuiCheckbox checkbox = new GuiCheckbox(10 + this.guiLeft, posy + this.guiTop, this.xSize - 20, 20, new TextComponent(text), customization.getBoolean(option), option, new TextComponent(desc));
+		String text = new TranslatableText(this.customization.getName(option)).getString();
+		String desc = new TranslatableText(this.customization.getDescription(option)).toString();
+		GuiCheckbox checkbox = new GuiCheckbox(10 + this.guiLeft, posy + this.guiTop, this.xSize - 20, 20, Text.of(text), customization.getBoolean(option), option, Text.of(desc));
 		posy += 22;
-		this.addRenderableWidget(checkbox);
+		this.addDrawableChild(checkbox);
 		options.put(checkbox, option);
 	}
-		
-	class GuiSlider extends AbstractSliderButton {
+
+	class GuiSlider extends SliderWidget {
 		double min, max, val;
 		String text, option;
-		public Component tooltip;
+		public Text tooltip;
 		public GuiSlider(int x, int y, int w, int h,
-				Component text, double min, double max, double val, String option, Component tooltip) {
+						 Text text, double min, double max, double val, String option, Text tooltip) {
 			super(x, y, w, h, text, (val - min) / (max - min));
 			this.min = min;
 			this.max = max;
@@ -266,13 +259,13 @@ public class GuiModifier extends Screen {
 			this.text = text.getString();
 			this.option = option;
 			this.tooltip = tooltip;
-			
+
 			this.updateMessage();
 		}
 
 		@Override
 		protected void updateMessage() {
-			this.setMessage(new TextComponent(text + ": " + String.format("%.1f", this.val)));
+			this.setMessage(Text.of(text + ": " + String.format("%.1f", this.val)));
 		}
 
 		@Override
@@ -281,42 +274,42 @@ public class GuiModifier extends Screen {
 //			d = Math.floor(d * 10 + 0.5) / 10;
 			customization.setDouble(option, this.val);
 		}
-		
+
 		@Override
-		public void renderButton(PoseStack p_230431_1_, int p_230431_2_, int p_230431_3_, float p_230431_4_) {
-			super.renderButton(p_230431_1_, p_230431_2_, p_230431_3_, p_230431_4_);
-			
-			if (this.isHovered) {
+		public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+			super.renderButton(matrices, mouseX, mouseY, delta);
+
+			if (this.isHovered()) {
 				String tooltiptext = tooltip.getString();
-				ArrayList<Component> lines = new ArrayList<Component>();
+				List<Text> lines = new ArrayList<Text>();
 				for (String line : tooltiptext.split("\n")) {
-					lines.add(new TextComponent(line));
+					lines.add(Text.of(line));
 				}
-				renderTooltip(p_230431_1_, lines, Optional.empty(), p_230431_2_, p_230431_3_);
+				renderTooltip(matrices, mouseX, mouseY);
 			}
 		}
 	}
-	
+
 	public void addSlider(String option) {
 		double d = customization.getDouble(option);
 		d = Math.floor(d * 10 + 0.5) / 10;
-		
+
 		double max = customization.getMax(option, this.getLimits());
 		double min = customization.getMin(option, this.getLimits());
-		
-		String text = ClientProxyInterface.proxy.localize(this.customization.getName(option));
-		String desc = ClientProxyInterface.proxy.localize(this.customization.getDescription(option));
-		GuiSlider slider = new GuiSlider(10 + this.guiLeft, posy + this.guiTop, this.xSize - 20, 20, new TextComponent(text), min, max, d, option, new TextComponent(desc));
-		
+
+		String text = new TranslatableText(this.customization.getName(option)).getString();
+		String desc = new TranslatableText(this.customization.getDescription(option)).toString();
+		GuiSlider slider = new GuiSlider(10 + this.guiLeft, posy + this.guiTop, this.xSize - 20, 20, Text.of(text), min, max, d, option, Text.of(desc));
+
 		posy += 22;
-		this.addRenderableWidget(slider);
+		this.addDrawableChild(slider);
 		options.put(slider, option);
 	}
 
 	public void showCategoryScreen(GrappleCustomization.upgradeCategories category) {
 		clearScreen();
 
-		this.addRenderableWidget(new Button(this.guiLeft + 10, this.guiTop + this.ySize - 20 - 10, 50, 20, new TextComponent(ClientProxyInterface.proxy.localize("grapplemodifier.back.desc")), new PressBack()));
+		this.addDrawableChild(new ButtonWidget(this.guiLeft + 10, this.guiTop + this.ySize - 20 - 10, 50, 20, new TranslatableText("grapplemodifier.back.desc"), new PressBack()));
 		this.category = category;
 
 		if (category == GrappleCustomization.upgradeCategories.ROPE) {
@@ -362,56 +355,56 @@ public class GuiModifier extends Screen {
 			addSlider("rocket_refuel_ratio");
 			addSlider("rocket_vertical_angle");
 		}
-		
+
 		this.updateEnabled();
 	}
-	
+
 	@Override
-	public void onClose() {
+	public void close() {
 //		this.updateOptions();
 		this.tileEnt.setCustomizationClient(customization);
-		
-		super.onClose();
+
+		super.close();
 	}
-	
+
 	public void updateEnabled() {
-		for (AbstractWidget b : this.options.keySet()) {
+		for (ClickableWidget b : this.options.keySet()) {
 			String option = this.options.get(b);
 			boolean enabled = true;
-			
-			String desc = ClientProxyInterface.proxy.localize(this.customization.getDescription(option));
-			
+
+			String desc = new TranslatableText(this.customization.getDescription(option)).toString();
+
 			if (this.customization.isOptionValid(option)) {
 			} else {
-				desc = ClientProxyInterface.proxy.localize("grapplemodifier.incompatability.desc") + "\n" + desc;
+				desc = new TranslatableText("grapplemodifier.incompatability.desc") + "\n" + desc;
 				enabled = false;
 			}
-			
+
 			int level = this.customization.optionEnabled(option);
 			if (this.getLimits() < level) {
 				if (level == 1) {
-					desc = ClientProxyInterface.proxy.localize("grapplemodifier.limits.desc") + "\n" + desc;
+					desc = new TranslatableText("grapplemodifier.limits.desc") + "\n" + desc;
 				} else {
-					desc = ClientProxyInterface.proxy.localize("grapplemodifier.locked.desc") + "\n" + desc;
+					desc = new TranslatableText("grapplemodifier.locked.desc") + "\n" + desc;
 				}
 				enabled = false;
 			}
-			
+
 			b.active = enabled;
 
 			if (b instanceof GuiSlider) {
-				((GuiSlider) b).tooltip = new TextComponent(desc);
+				((GuiSlider) b).tooltip = Text.of(desc);
 				b.setAlpha(enabled ? 1.0F : 0.5F);
 			}
 			if (b instanceof GuiCheckbox) {
-				((GuiCheckbox) b).tooltip = new TextComponent(desc);
+				((GuiCheckbox) b).tooltip = Text.of(desc);
 				b.setAlpha(enabled ? 1.0F : 0.5F);
 			}
 		}
 	}
-	
+
 	public int getLimits() {
-		if (this.tileEnt.isUnlocked(GrappleCustomization.upgradeCategories.LIMITS) || Minecraft.getInstance().player.isCreative()) {
+		if (this.tileEnt.isUnlocked(GrappleCustomization.upgradeCategories.LIMITS) || MinecraftClient.getInstance().player.isCreative()) {
 			return 1;
 		}
 		return 0;

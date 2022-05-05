@@ -8,8 +8,10 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry.BoundedDiscrete;
 import me.shedaniel.autoconfig.annotation.ConfigEntry.Gui.Tooltip;
 import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 
-//@Config(modid="grapplemod", name="grappling_hook", category="")
-@Config(name = "grapplemod")
+import static com.yyon.grapplinghook.grapplemod.MODID;
+
+
+@Config(name = MODID)
 public class GrappleConfig implements ConfigData {
 	public static class Config {
 		@ConfigEntry.Gui.CollapsibleObject
@@ -34,12 +36,12 @@ public class GrappleConfig implements ConfigData {
 					public double min;
 					@Comment("Minimum value in the grappling hook modifier (after limits upgrade)")
 					public double min_upgraded;
-					
+
 					public DoubleCustomizationOption(double default_value, int enabled, double max, double max_upgraded) {
 						this.default_value = default_value; this.enabled = enabled; this.max = max; this.max_upgraded = max_upgraded;
 						this.min = 0; this.min_upgraded = 0;
 					}
-					
+
 					public DoubleCustomizationOption(double default_value, int enabled, double max, double max_upgraded, double min, double min_upgraded) {
 						this(default_value, enabled, max, max_upgraded);
 						this.min = min; this.min_upgraded = min_upgraded;
@@ -51,12 +53,12 @@ public class GrappleConfig implements ConfigData {
 					@Comment("Is this value changeable in the grappling hook modifier? 0 = always enabled, 1 = enabled after the limits upgrade, 2 = always disabled")
 					@BoundedDiscrete(max=2, min=0)
 					public int enabled;
-					
+
 					public BooleanCustomizationOption(boolean default_value, int enabled) {
 						this.default_value = default_value; this.enabled = enabled;
 					}
 				}
-				
+
 				@ConfigEntry.Gui.CollapsibleObject
 				@Tooltip
 				public Rope rope = new Rope();
@@ -71,7 +73,7 @@ public class GrappleConfig implements ConfigData {
 					@Tooltip
 					public BooleanCustomizationOption sticky = new BooleanCustomizationOption(false, 0);
 				}
-				
+
 				@ConfigEntry.Gui.CollapsibleObject
 				@Tooltip
 				public HookThrower hookthrower = new HookThrower();
@@ -95,7 +97,7 @@ public class GrappleConfig implements ConfigData {
 					@Tooltip
 					public BooleanCustomizationOption detachonkeyrelease = new BooleanCustomizationOption(false, 0);
 				}
-				
+
 				@ConfigEntry.Gui.CollapsibleObject
 				@Tooltip
 				public Motor motor = new Motor();
@@ -125,7 +127,7 @@ public class GrappleConfig implements ConfigData {
 					@Tooltip
 					public BooleanCustomizationOption pullbackwards = new BooleanCustomizationOption(true, 0);
 				}
-				
+
 				@ConfigEntry.Gui.CollapsibleObject
 				@Tooltip
 				public Swing swing = new Swing();
@@ -134,7 +136,7 @@ public class GrappleConfig implements ConfigData {
 					@Tooltip
 					public DoubleCustomizationOption playermovementmult = new DoubleCustomizationOption(1, 0, 2, 5);
 				}
-				
+
 				@ConfigEntry.Gui.CollapsibleObject
 				@Tooltip
 				public EnderStaff enderstaff = new EnderStaff();
@@ -143,7 +145,7 @@ public class GrappleConfig implements ConfigData {
 					@Tooltip
 					public BooleanCustomizationOption enderstaff = new BooleanCustomizationOption(false, 0);
 				}
-				
+
 				@ConfigEntry.Gui.CollapsibleObject
 				@Tooltip
 				public Forcefield forcefield = new Forcefield();
@@ -155,7 +157,7 @@ public class GrappleConfig implements ConfigData {
 					@Tooltip
 					public DoubleCustomizationOption repelforce = new DoubleCustomizationOption(1, 0, 1, 5);
 				}
-				
+
 				@ConfigEntry.Gui.CollapsibleObject
 				@Tooltip
 				public Magnet magnet = new Magnet();
@@ -167,7 +169,7 @@ public class GrappleConfig implements ConfigData {
 					@Tooltip
 					public DoubleCustomizationOption attractradius = new DoubleCustomizationOption(3, 0, 3, 10);
 				}
-				
+
 				@ConfigEntry.Gui.CollapsibleObject
 				@Tooltip
 				public DoubleHook doublehook = new DoubleHook();
@@ -188,7 +190,7 @@ public class GrappleConfig implements ConfigData {
 					@Tooltip
 					public BooleanCustomizationOption oneropepull = new BooleanCustomizationOption(false, 0);
 				}
-				
+
 				@ConfigEntry.Gui.CollapsibleObject
 				@Tooltip
 				public Rocket rocket = new Rocket();
@@ -210,8 +212,7 @@ public class GrappleConfig implements ConfigData {
 					public DoubleCustomizationOption rocket_vertical_angle = new DoubleCustomizationOption(0, 0, 90, 90);
 				}
 			}
-			
-			
+
 			@ConfigEntry.Gui.CollapsibleObject
 			@Tooltip
 			public Blocks blocks = new Blocks();
@@ -223,7 +224,7 @@ public class GrappleConfig implements ConfigData {
 				@Tooltip
 				public String grappleBreakBlocks = "none";
 			}
-			
+
 			@ConfigEntry.Gui.CollapsibleObject
 			@Tooltip
 			public Other other = new Other();
@@ -244,7 +245,7 @@ public class GrappleConfig implements ConfigData {
 				public double climb_speed = 0.3;
 			}
 		}
-		
+
 		@ConfigEntry.Gui.CollapsibleObject
 		@Tooltip
 		public LongFallBoots longfallboots = new LongFallBoots();
@@ -252,7 +253,7 @@ public class GrappleConfig implements ConfigData {
 			@Tooltip
 			public boolean longfallbootsrecipe = true;
 		}
-		
+
 		@ConfigEntry.Gui.CollapsibleObject
 		@Tooltip
 		public EnderStaff enderstaff = new EnderStaff();
@@ -262,7 +263,7 @@ public class GrappleConfig implements ConfigData {
 			@Tooltip
 			public int ender_staff_recharge = 100;
 		}
-		
+
 		@ConfigEntry.Gui.CollapsibleObject
 		@Tooltip
 		public Enchantments enchantments = new Enchantments();
@@ -289,7 +290,7 @@ public class GrappleConfig implements ConfigData {
 				@Tooltip
 				public int enchant_rarity_wallrun = 0;
 			}
-			
+
 			@ConfigEntry.Gui.CollapsibleObject
 			@Tooltip
 			public DoubleJump doublejump = new DoubleJump();
@@ -304,7 +305,7 @@ public class GrappleConfig implements ConfigData {
 				@Tooltip
 				public int enchant_rarity_double_jump = 0;
 			}
-			
+
 			@ConfigEntry.Gui.CollapsibleObject
 			@Tooltip
 			public Slide slide = new Slide();
@@ -322,7 +323,7 @@ public class GrappleConfig implements ConfigData {
 				public int enchant_rarity_sliding = 0;
 			}
 		}
-		
+
 		@ConfigEntry.Gui.CollapsibleObject
 		@Tooltip
 		public Other other = new Other();
@@ -337,14 +338,14 @@ public class GrappleConfig implements ConfigData {
 			public boolean dont_override_movement_in_air = false;
 		}
 	}
-	
+
     @ConfigEntry.Gui.CollapsibleObject
     @Tooltip
 	public Config options = new Config(); // local options
-	
+
     @ConfigEntry.Gui.Excluded
 	private static Config serverOptions = null;
-	
+
 	public static class ClientConfig {
 		@ConfigEntry.Gui.CollapsibleObject
 		@Tooltip
@@ -355,7 +356,7 @@ public class GrappleConfig implements ConfigData {
 			@Tooltip
 			public float wallrun_camera_animation_s = 0.5f;
 		}
-		
+
 		@ConfigEntry.Gui.CollapsibleObject
 		@Tooltip
 		public Sounds sounds = new Sounds();
@@ -376,7 +377,7 @@ public class GrappleConfig implements ConfigData {
 			public float enderstaff_sound_volume = 1.0F;
 		}
 	}
-	
+
     @ConfigEntry.Gui.CollapsibleObject
 	@Tooltip
 	public ClientConfig clientOptions = new ClientConfig(); // client-only options, don't need to sync with server
@@ -388,11 +389,11 @@ public class GrappleConfig implements ConfigData {
 			return serverOptions;
 		}
 	}
-	
+
 	public static void setServerOptions(Config newserveroptions) {
 		serverOptions = newserveroptions;
 	}
-	
+
 	public static ClientConfig getClientConf() {
 		return AutoConfig.getConfigHolder(GrappleConfig.class).getConfig().clientOptions;
 	}

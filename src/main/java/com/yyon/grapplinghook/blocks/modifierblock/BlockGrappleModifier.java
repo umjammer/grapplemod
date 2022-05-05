@@ -1,183 +1,160 @@
 package com.yyon.grapplinghook.blocks.modifierblock;
 
-import com.yyon.grapplinghook.client.ClientProxyInterface;
+import java.util.Map;
+
 import com.yyon.grapplinghook.common.CommonSetup;
 import com.yyon.grapplinghook.config.GrappleConfig;
 import com.yyon.grapplinghook.items.GrapplehookItem;
 import com.yyon.grapplinghook.items.upgrades.BaseUpgradeItem;
 import com.yyon.grapplinghook.utils.GrappleCustomization;
 import com.yyon.grapplinghook.utils.Vec;
-import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.FireworkRocketEntity;
-import net.minecraft.world.item.FireworkRocketItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BaseEntityBlock;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Material;
-import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockEntityProvider;
+import net.minecraft.block.BlockRenderType;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.FireworkRocketEntity;
+import net.minecraft.item.FireworkRocketItem;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import static com.yyon.grapplinghook.client.ClientSetup.clientProxy;
 
-public class BlockGrappleModifier extends BaseEntityBlock {
 
-	public BlockGrappleModifier() {
-		super(Block.Properties.of(Material.STONE).strength(1.5f));
+public class BlockGrappleModifier extends Block implements BlockEntityProvider {
+
+	public BlockGrappleModifier(AbstractBlock.Settings settings) {
+		super(settings);
 	}
-
 
 	@Nullable
 	@Override
-	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+	public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
 		return new TileEntityGrappleModifier(pos,state);
 	}
-	
-	@Override
-	public List<ItemStack> getDrops(BlockState state, LootContext.Builder lootctx) {
-		List<ItemStack> drops = new ArrayList<ItemStack>();
-		drops.add(new ItemStack(this.asItem()));
-		BlockEntity ent = lootctx.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
-		if (ent == null || !(ent instanceof TileEntityGrappleModifier)) {
-			return drops;
-		}
-		TileEntityGrappleModifier tileent = (TileEntityGrappleModifier) ent;
-		
-		for (GrappleCustomization.upgradeCategories category : GrappleCustomization.upgradeCategories.values()) {
-			if (tileent.unlockedCategories.containsKey(category) && tileent.unlockedCategories.get(category)) {
-				drops.add(new ItemStack(category.getItem()));
-			}
-		}
-		return drops;
-	}
-	
+
     @Override
-    public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player playerIn, InteractionHand hand, BlockHitResult raytraceresult) {
-		ItemStack helditemstack = playerIn.getItemInHand(InteractionHand.MAIN_HAND);
+	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+		ItemStack helditemstack = player.getMainHandStack();
 		Item helditem = helditemstack.getItem();
 
 		if (helditem instanceof BaseUpgradeItem) {
-			if (!worldIn.isClientSide) {
-				BlockEntity ent = worldIn.getBlockEntity(pos);
+			if (!world.isClient()) {
+				BlockEntity ent = world.getBlockEntity(pos);
 				TileEntityGrappleModifier tileent = (TileEntityGrappleModifier) ent;
-				
+
 				GrappleCustomization.upgradeCategories category = ((BaseUpgradeItem) helditem).category;
 				if (category != null) {
 					if (tileent.isUnlocked(category)) {
-						playerIn.sendMessage(new TextComponent("Already has upgrade: " + category.getName()), playerIn.getUUID());
+						player.sendMessage(Text.of("Already has upgrade: " + category.getName()), false);
 					} else {
-						if (!playerIn.isCreative()) {
-							playerIn.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+						if (!player.isCreative()) {
+							player.setStackInHand(Hand.MAIN_HAND, ItemStack.EMPTY);
 						}
-						
+
 						tileent.unlockCategory(category);
-						
-						playerIn.sendMessage(new TextComponent("Applied upgrade: " + category.getName()), playerIn.getUUID());
+
+						player.sendMessage(Text.of("Applied upgrade: " + category.getName()), false);
 					}
 				}
 			}
 		} else if (helditem instanceof GrapplehookItem) {
-			if (!worldIn.isClientSide) {
-				BlockEntity ent = worldIn.getBlockEntity(pos);
+			if (!world.isClient()) {
+				BlockEntity ent = world.getBlockEntity(pos);
 				TileEntityGrappleModifier tileent = (TileEntityGrappleModifier) ent;
-				
+
 				GrappleCustomization custom = tileent.customization;
-				((GrapplehookItem) CommonSetup.grapplingHookItem).setCustomOnServer(helditemstack, custom, playerIn);
-				
-				playerIn.sendMessage(new TextComponent("Applied configuration"), playerIn.getUUID());
+				((GrapplehookItem) CommonSetup.grapplingHookItem).setCustomOnServer(helditemstack, custom, player);
+
+				player.sendMessage(Text.of("Applied configuration"), false);
 			}
 		} else if (helditem == Items.DIAMOND_BOOTS) {
-			if (!worldIn.isClientSide) {
+			if (!world.isClient()) {
 				if (GrappleConfig.getConf().longfallboots.longfallbootsrecipe) {
 					boolean gaveitem = false;
-					if (helditemstack.isEnchanted()) {
-						Map<Enchantment, Integer> enchantments = EnchantmentHelper.getEnchantments(helditemstack);
-						if (enchantments.containsKey(Enchantments.FALL_PROTECTION)) {
-							if (enchantments.get(Enchantments.FALL_PROTECTION) >= 4) {
+					if (!helditemstack.isEnchantable()) {
+						Map<Enchantment, Integer> enchantments = EnchantmentHelper.get(helditemstack);
+						if (enchantments.containsKey(Enchantments.FEATHER_FALLING)) {
+							if (enchantments.get(Enchantments.FEATHER_FALLING) >= 4) {
 								ItemStack newitemstack = new ItemStack(CommonSetup.longFallBootsItem);
-								EnchantmentHelper.setEnchantments(enchantments, newitemstack);
-								playerIn.setItemInHand(InteractionHand.MAIN_HAND, newitemstack);
+								EnchantmentHelper.set(enchantments, newitemstack);
+								player.setStackInHand(Hand.MAIN_HAND, newitemstack);
 								gaveitem = true;
 							}
 						}
 					}
 					if (!gaveitem) {
-						playerIn.sendMessage(new TextComponent("Right click with diamond boots enchanted with feather falling IV to get long fall boots"), playerIn.getUUID());
+						player.sendMessage(Text.of("Right click with diamond boots enchanted with feather falling IV to get long fall boots"), false);
 					}
 				} else {
-					playerIn.sendMessage(new TextComponent("Making long fall boots this way was disabled in the config. It probably has been replaced by a crafting recipe."), playerIn.getUUID());
+					player.sendMessage(Text.of("Making long fall boots this way was disabled in the config. It probably has been replaced by a crafting recipe."), false);
 				}
 			}
 		} else if (helditem == Items.DIAMOND) {
-			this.easterEgg(state, worldIn, pos, playerIn, hand, raytraceresult);
+			this.easterEgg(state, world, pos, player, hand, hit);
 		} else {
-			if (worldIn.isClientSide) {
-				BlockEntity ent = worldIn.getBlockEntity(pos);
+			if (world.isClient()) {
+				BlockEntity ent = world.getBlockEntity(pos);
 				TileEntityGrappleModifier tileent = (TileEntityGrappleModifier) ent;
-				
-				ClientProxyInterface.proxy.openModifierScreen(tileent);
+
+				clientProxy.openModifierScreen(tileent);
 			}
 		}
-		return InteractionResult.SUCCESS;
+		return ActionResult.SUCCESS;
 	}
     
     @Override
-    public RenderShape getRenderShape(BlockState pState) {
-        return RenderShape.MODEL;
-    }
+	public BlockRenderType getRenderType(BlockState blockState) {
+		return BlockRenderType.MODEL;
+	}
 
-	public void easterEgg(BlockState state, Level worldIn, BlockPos pos, Player playerIn, InteractionHand hand,
+	public void easterEgg(BlockState state, World worldIn, BlockPos pos, PlayerEntity playerIn, Hand hand,
 			BlockHitResult raytraceresult) {
 		int spacing = 3;
 		Vec[] positions = new Vec[] {new Vec(-spacing*2, 0, 0), new Vec(-spacing, 0, 0), new Vec(0, 0, 0), new Vec(spacing, 0, 0), new Vec(2*spacing, 0, 0)};
 		int[] colors = new int[] {0x5bcffa, 0xf5abb9, 0xffffff, 0xf5abb9, 0x5bcffa};
-		
+
 		for (int i = 0; i < positions.length; i++) {
 			Vec newpos = new Vec(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5);
 			Vec toPlayer = Vec.positionVec(playerIn).sub(newpos);
 			double angle = toPlayer.length() == 0 ? 0 : toPlayer.getYaw();
 			newpos = newpos.add(positions[i].rotateYaw(Math.toRadians(angle)));
-			
-			CompoundTag explosion = new CompoundTag();
-	        explosion.putByte("Type", (byte) FireworkRocketItem.Shape.SMALL_BALL.getId());
+
+			NbtCompound explosion = new NbtCompound();
+	        explosion.putByte("Type", (byte) FireworkRocketItem.Type.SMALL_BALL.getId());
 	        explosion.putBoolean("Trail", true);
 	        explosion.putBoolean("Flicker", false);
 	        explosion.putIntArray("Colors", new int[] {colors[i]});
 	        explosion.putIntArray("FadeColors", new int[] {});
-	        ListTag list = new ListTag();
+	        NbtList list = new NbtList();
 	        list.add(explosion);
-	        CompoundTag fireworks = new CompoundTag();
+			NbtCompound fireworks = new NbtCompound();
 	        fireworks.put("Explosions", list);
-	        CompoundTag nbt = new CompoundTag();
+			NbtCompound nbt = new NbtCompound();
 	        nbt.put("Fireworks", fireworks);
 	        ItemStack stack = new ItemStack(Items.FIREWORK_ROCKET);
-	        stack.setTag(nbt);
+	        stack.setNbt(nbt);
 			FireworkRocketEntity firework = new FireworkRocketEntity(worldIn, playerIn, newpos.x, newpos.y, newpos.z, stack);
-			CompoundTag fireworksave = new CompoundTag();
-			firework.addAdditionalSaveData(fireworksave);
+			NbtCompound fireworksave = new NbtCompound();
+			firework.readCustomDataFromNbt(fireworksave);
 			fireworksave.putInt("LifeTime", 15);
-			firework.readAdditionalSaveData(fireworksave);
-			worldIn.addFreshEntity(firework);
+			firework.readCustomDataFromNbt(fireworksave);
+			worldIn.spawnEntity(firework);
 		}
 	}
-
-
 }

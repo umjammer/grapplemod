@@ -1,11 +1,3 @@
-package com.yyon.grapplinghook.network;
-
-import com.yyon.grapplinghook.client.ClientControllerManager;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkEvent;
-
 /*
  * This file is part of GrappleMod.
 
@@ -23,28 +15,42 @@ import net.minecraftforge.network.NetworkEvent;
     along with GrappleMod.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-public class GrappleDetachMessage extends BaseMessageClient {
-   
-	public int id;
+package com.yyon.grapplinghook.network;
 
-    public GrappleDetachMessage(FriendlyByteBuf buf) {
-    	super(buf);
+import com.yyon.grapplinghook.client.ClientControllerManager;
+import io.netty.buffer.Unpooled;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.Identifier;
+
+import static com.yyon.grapplinghook.grapplemod.MODID;
+
+
+public class GrappleDetachMessage implements BaseMessageClient {
+
+    public static final Identifier IDENTIFIER = new Identifier(MODID, "grapple_detach");
+
+    @Override
+    public Identifier getIdentifier() {
+        return IDENTIFIER;
+    }
+
+    public int id;
+
+    public GrappleDetachMessage(PacketByteBuf buf) {
+        this.id = buf.readInt();
     }
 
     public GrappleDetachMessage(int id) {
     	this.id = id;
     }
 
-    public void decode(FriendlyByteBuf buf) {
-    	this.id = buf.readInt();
-    }
-
-    public void encode(FriendlyByteBuf buf) {
+    public PacketByteBuf toPacket() {
+        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
     	buf.writeInt(this.id);
+        return buf;
     }
     
-    @OnlyIn(Dist.CLIENT)
-    public void processMessage(NetworkEvent.Context ctx) {
+    public void processMessage() {
     	ClientControllerManager.receiveGrappleDetach(this.id);
     }
 }

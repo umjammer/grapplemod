@@ -1,18 +1,26 @@
 package com.yyon.grapplinghook.client;
 
-import com.mojang.blaze3d.platform.InputConstants;
-import net.minecraft.client.KeyMapping;
-import net.minecraftforge.client.settings.IKeyConflictContext;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
 
-public class NonConflictingKeyBinding extends KeyMapping {
+public class NonConflictingKeyBinding extends KeyBinding {
+
+	interface IKeyConflictContext {
+		boolean isActive();
+		boolean conflicts(IKeyConflictContext other);
+	}
+
 	public NonConflictingKeyBinding(String description, int keyCode, String category) {
 		super(description, keyCode, category);
 		this.setNonConflict();
 	}
 
-//	boolean isActive = false;
+	IKeyConflictContext keyConflictContext;
+
+	boolean isActive = false;
+
 	private void setNonConflict() {
-		this.setKeyConflictContext(new IKeyConflictContext() {
+		this.keyConflictContext = new IKeyConflictContext() {
 			@Override
 			public boolean isActive() {
 				return false;
@@ -21,29 +29,32 @@ public class NonConflictingKeyBinding extends KeyMapping {
 			public boolean conflicts(IKeyConflictContext other) {
 				return false;
 			}
-		});
+		};
 	}
 
-	public NonConflictingKeyBinding(String description, InputConstants.Type type, int keyCode, String category) {
+	public NonConflictingKeyBinding(String description, InputUtil.Type type, int keyCode, String category) {
 		super(description, type, keyCode, category);
 		this.setNonConflict();
 	}
 
-   public boolean same(KeyMapping p_197983_1_) {
+	@Override
+	public boolean equals(KeyBinding keyBinding) {
 	   return false;
    }
-   public boolean hasKeyCodeModifierConflict(KeyMapping other) {
+
+	public boolean hasKeyCodeModifierConflict(KeyBinding other) {
 	   return true;
    }
    
-   public boolean isDown = false;
-   
-   public boolean isDown() {
+	public boolean isDown = false;
+
+	@Override
+	public boolean isPressed() {
 	   return isDown;
    }
-   
-   @Override
-   public void setDown(boolean value) {
+
+	@Override
+	public void setPressed(boolean value) {
 	   this.isDown = value;
    }
 }

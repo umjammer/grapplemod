@@ -1,15 +1,3 @@
-package com.yyon.grapplinghook.network;
-
-import com.yyon.grapplinghook.config.GrappleConfig;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Type;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Comparator;
-
 /*
  * This file is part of GrappleMod.
 
@@ -27,26 +15,47 @@ import java.util.Comparator;
     along with GrappleMod.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-public class LoggedInMessage extends BaseMessageClient {
-    GrappleConfig.Config conf;
+package com.yyon.grapplinghook.network;
 
-    public LoggedInMessage(FriendlyByteBuf buf) {
-    	super(buf);
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.Comparator;
+
+import com.yyon.grapplinghook.config.GrappleConfig;
+import io.netty.buffer.Unpooled;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.Identifier;
+
+import static com.yyon.grapplinghook.grapplemod.MODID;
+
+
+public class LoggedInMessage implements BaseMessageClient {
+    public static final Identifier IDENTIFIER = new Identifier(MODID, "logged_in");
+
+	@Override
+	public Identifier getIdentifier() {
+		return IDENTIFIER;
+	}
+
+	GrappleConfig.Config conf;
+
+    public LoggedInMessage(PacketByteBuf buf) {
+		Class<GrappleConfig.Config> confclass = GrappleConfig.Config.class;
+		this.conf = new GrappleConfig.Config();
+
+		decodeClass(buf, confclass, this.conf);
     }
-    
+
     public LoggedInMessage(GrappleConfig.Config serverconf) {
     	this.conf = serverconf;
     }
-    
-    public <T> void decodeClass(FriendlyByteBuf buf, Class<T> theClass, T theObject) {
+
+    private <T> void decodeClass(PacketByteBuf buf, Class<T> theClass, T theObject) {
     	Field[] fields = theClass.getDeclaredFields();
-    	Arrays.sort(fields, new Comparator<Field>() {
-    	    @Override
-    	    public int compare(Field o1, Field o2) {
-    	        return o1.getName().compareTo(o2.getName());
-    	    }
-    	});
-    	
+    	Arrays.sort(fields, Comparator.comparing(Field::getName));
+
     	for (Field field : fields) {
     		Type fieldtype = field.getGenericType();
     		try {
@@ -60,7 +69,7 @@ public class LoggedInMessage extends BaseMessageClient {
         			int len = buf.readInt();
         			CharSequence charseq = buf.readCharSequence(len, Charset.defaultCharset());
         			field.set(theObject, charseq.toString());
-        		} else if (field.getType() != null && Object.class.isAssignableFrom(field.getType())) {
+        		} else if (Object.class.isAssignableFrom(field.getType())) {
         			Class newClass = field.getType();
         			decodeClass(buf, newClass, newClass.cast(field.get(theObject)));
         		} else {
@@ -73,22 +82,10 @@ public class LoggedInMessage extends BaseMessageClient {
     	}
     }
 
-    public void decode(FriendlyByteBuf buf) {
-    	Class<GrappleConfig.Config> confclass = GrappleConfig.Config.class;
-    	this.conf = new GrappleConfig.Config();
-    	
-    	decodeClass(buf, confclass, this.conf);
-    }
-
-    public <T> void encodeClass(FriendlyByteBuf buf, Class<T> theClass, T theObject) {
+	private <T> void encodeClass(PacketByteBuf buf, Class<T> theClass, T theObject) {
     	Field[] fields = theClass.getDeclaredFields();
-    	Arrays.sort(fields, new Comparator<Field>() {
-    	    @Override
-    	    public int compare(Field o1, Field o2) {
-    	        return o1.getName().compareTo(o2.getName());
-    	    }
-    	});
-    	
+    	Arrays.sort(fields, Comparator.comparing(Field::getName));
+
     	for (Field field : fields) {
     		Type fieldtype = field.getGenericType();
     		try {
@@ -115,13 +112,14 @@ public class LoggedInMessage extends BaseMessageClient {
     	}
     }
 
-    public void encode(FriendlyByteBuf buf) {
+	public PacketByteBuf toPacket() {
+		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
     	Class<GrappleConfig.Config> confclass = GrappleConfig.Config.class;
     	encodeClass(buf, confclass, this.conf);
+		return buf;
     }
 
-	@Override
-	public void processMessage(NetworkEvent.Context ctx) {
+	public void processMessage() {
     	GrappleConfig.setServerOptions(this.conf);
     }
 }

@@ -1,11 +1,3 @@
-package com.yyon.grapplinghook.network;
-
-import com.yyon.grapplinghook.client.ClientControllerManager;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkEvent;
-
 /*
  * This file is part of GrappleMod.
 
@@ -23,13 +15,30 @@ import net.minecraftforge.network.NetworkEvent;
     along with GrappleMod.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-public class DetachSingleHookMessage extends BaseMessageClient {
-   
-	public int id;
+package com.yyon.grapplinghook.network;
+
+import com.yyon.grapplinghook.client.ClientControllerManager;
+import io.netty.buffer.Unpooled;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.Identifier;
+
+import static com.yyon.grapplinghook.grapplemod.MODID;
+
+public class DetachSingleHookMessage implements BaseMessageClient {
+
+    public static final Identifier IDENTIFIER = new Identifier(MODID, "detach_single_hook");
+
+    @Override
+    public Identifier getIdentifier() {
+        return IDENTIFIER;
+    }
+
+    public int id;
 	public int hookid;
 
-    public DetachSingleHookMessage(FriendlyByteBuf buf) {
-    	super(buf);
+    public DetachSingleHookMessage(PacketByteBuf buf) {
+        this.id = buf.readInt();
+        this.hookid = buf.readInt();
     }
 
     public DetachSingleHookMessage(int id, int hookid) {
@@ -37,18 +46,14 @@ public class DetachSingleHookMessage extends BaseMessageClient {
     	this.hookid = hookid;
     }
 
-    public void decode(FriendlyByteBuf buf) {
-    	this.id = buf.readInt();
-    	this.hookid = buf.readInt();
-    }
-
-    public void encode(FriendlyByteBuf buf) {
+    public PacketByteBuf toPacket() {
+        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
     	buf.writeInt(this.id);
     	buf.writeInt(this.hookid);
+        return buf;
     }
     
-    @OnlyIn(Dist.CLIENT)
-    public void processMessage(NetworkEvent.Context ctx) {
+    public void processMessage() {
     	ClientControllerManager.receiveGrappleDetachHook(this.id, this.hookid);
     }
 }

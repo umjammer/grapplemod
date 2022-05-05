@@ -1,55 +1,54 @@
 package com.yyon.grapplinghook.server;
 
-import com.yyon.grapplinghook.entities.grapplehook.GrapplehookEntity;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.Level;
-
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import com.yyon.grapplinghook.entities.grapplehook.GrapplehookEntity;
+import net.minecraft.entity.Entity;
+import net.minecraft.world.World;
 
 public class ServerControllerManager {
-	public static HashSet<Integer> attached = new HashSet<Integer>(); // server side
-	public static HashMap<Integer, HashSet<GrapplehookEntity>> allGrapplehookEntities = new HashMap<Integer, HashSet<GrapplehookEntity>>(); // server side
+	public Set<Integer> attached = new HashSet<>(); // server side
+	public Map<Integer, Set<GrapplehookEntity>> allGrapplehookEntities = new HashMap<>(); // server side
 
-	public static void addGrapplehookEntity(int id, GrapplehookEntity hookEntity) {
+	public void addGrapplehookEntity(int id, GrapplehookEntity hookEntity) {
 		if (!allGrapplehookEntities.containsKey(id)) {
-			allGrapplehookEntities.put(id, new HashSet<GrapplehookEntity>());
+			allGrapplehookEntities.put(id, new HashSet<>());
 		}
 		allGrapplehookEntities.get(id).add(hookEntity);
 	}
-	
-	public static void removeAllMultiHookGrapplehookEntities(int id) {
+
+	public void removeAllMultiHookGrapplehookEntities(int id) {
 		if (!allGrapplehookEntities.containsKey(id)) {
-			allGrapplehookEntities.put(id, new HashSet<GrapplehookEntity>());
+			allGrapplehookEntities.put(id, new HashSet<>());
 		}
 		for (GrapplehookEntity hookEntity : allGrapplehookEntities.get(id)) {
 			if (hookEntity != null && hookEntity.isAlive()) {
 				hookEntity.removeServer();
 			}
 		}
-		allGrapplehookEntities.put(id, new HashSet<GrapplehookEntity>());
+		allGrapplehookEntities.put(id, new HashSet<>());
 	}
-	
-	public static void receiveGrappleEnd(int id, Level world, HashSet<Integer> hookEntityIds) {
+
+	public void receiveGrappleEnd(int id, World world, Set<Integer> hookEntityIds) {
 		if (attached.contains(id)) {
 			attached.remove(id);
-		} else {
 		}
-		
+
 		for (int hookEntityId : hookEntityIds) {
-	      	Entity grapple = world.getEntity(hookEntityId);
+	      	Entity grapple = world.getEntityById(hookEntityId);
 	  		if (grapple instanceof GrapplehookEntity) {
 	  			((GrapplehookEntity) grapple).removeServer();
-	  		} else {
-	
 	  		}
 		}
-  		
-  		Entity entity = world.getEntity(id);
+
+  		Entity entity = world.getEntityById(id);
   		if (entity != null) {
       		entity.fallDistance = 0;
   		}
-  		
+
   		removeAllMultiHookGrapplehookEntities(id);
 	}
 }

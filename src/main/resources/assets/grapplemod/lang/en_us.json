@@ -42,6 +42,14 @@
     "key.rocket.desc": "Rocket",
     "key.slide.desc": "Slide",
 
+    "key.keyboard.w": "W",
+    "key.keyboard.a": "A",
+    "key.keyboard.s": "S",
+    "key.keyboard.d": "D",
+
+    "key.mouse.left": "Mouse 1",
+    "key.mouse.right": "Mouse 2",
+
     "enchantment.grapplemod.wallrunenchantment": "Wall Running",
     "enchantment.grapplemod.doublejumpenchantment": "Double Jump",
     "enchantment.grapplemod.slidingenchantment": "Sliding",

@@ -1,47 +1,45 @@
 package com.yyon.grapplinghook.blocks.modifierblock;
 
+import java.util.HashMap;
+import java.util.Map;
+import javax.annotation.Nullable;
+
 import com.yyon.grapplinghook.common.CommonSetup;
 import com.yyon.grapplinghook.network.GrappleModifierMessage;
 import com.yyon.grapplinghook.utils.GrappleCustomization;
 import com.yyon.grapplinghook.utils.GrappleCustomization.upgradeCategories;
-import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.Connection;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-
-import javax.annotation.Nullable;
-import java.util.HashMap;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.Packet;
+import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
+import net.minecraft.util.math.BlockPos;
 
 public class TileEntityGrappleModifier extends BlockEntity {
-	public HashMap<GrappleCustomization.upgradeCategories, Boolean> unlockedCategories = new HashMap<GrappleCustomization.upgradeCategories, Boolean>();
+	public Map<upgradeCategories, Boolean> unlockedCategories = new HashMap<>();
 	public GrappleCustomization customization;
 
 	public TileEntityGrappleModifier(BlockPos pos, BlockState state) {
-		super(CommonSetup.grappleModifierTileEntityType,pos,state);
+		super(CommonSetup.grappleModifierTileEntityType, pos, state);
 		this.customization = new GrappleCustomization();
 	}
 
 	public void unlockCategory(upgradeCategories category) {
 		unlockedCategories.put(category, true);
-		this.sendUpdates();
-		this.getLevel().sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), 3);
+		this.markDirty();
+		this.getWorld().onBlockChanged(this.getPos(), this.getCachedState(), this.getCachedState());
 	}
 
 	public void setCustomizationClient(GrappleCustomization customization) {
 		this.customization = customization;
-		CommonSetup.network.sendToServer(new GrappleModifierMessage(this.worldPosition, this.customization));
-		this.sendUpdates();
+		new GrappleModifierMessage(this.getPos(), this.customization).send();
+		this.markDirty();
 	}
 
 	public void setCustomizationServer(GrappleCustomization customization) {
 		this.customization = customization;
-		this.sendUpdates();
-	}
-
-	private void sendUpdates() {
-		this.setChanged();
+		this.markDirty();
 	}
 
 	public boolean isUnlocked(upgradeCategories category) {
@@ -49,10 +47,10 @@ public class TileEntityGrappleModifier extends BlockEntity {
 	}
 
 	@Override
-	public void saveAdditional(CompoundTag nbtTagCompound) {
-		super.saveAdditional(nbtTagCompound);
+	public void writeNbt(NbtCompound nbtTagCompound) {
+		super.writeNbt(nbtTagCompound);
 
-		CompoundTag unlockedNBT = nbtTagCompound.getCompound("unlocked");
+		NbtCompound unlockedNBT = nbtTagCompound.getCompound("unlocked");
 
 		for (GrappleCustomization.upgradeCategories category : GrappleCustomization.upgradeCategories.values()) {
 			String num = String.valueOf(category.toInt());
@@ -66,10 +64,10 @@ public class TileEntityGrappleModifier extends BlockEntity {
 	}
 
 	@Override
-	public void load(CompoundTag parentNBTTagCompound) {
-		super.load(parentNBTTagCompound); // The super call is required to load the tiles location
+	public void readNbt(NbtCompound parentNBTTagCompound) {
+		super.readNbt(parentNBTTagCompound); // The super call is required to load the tiles location
 
-		CompoundTag unlockedNBT = parentNBTTagCompound.getCompound("unlocked");
+		NbtCompound unlockedNBT = parentNBTTagCompound.getCompound("unlocked");
 
 		for (GrappleCustomization.upgradeCategories category : GrappleCustomization.upgradeCategories.values()) {
 			String num = String.valueOf(category.toInt());
@@ -78,10 +76,9 @@ public class TileEntityGrappleModifier extends BlockEntity {
 			this.unlockedCategories.put(category, unlocked);
 		}
 
-		CompoundTag custom = parentNBTTagCompound.getCompound("customization");
+		NbtCompound custom = parentNBTTagCompound.getCompound("customization");
 		this.customization.loadNBT(custom);
 	}
-
 
 	// When the world loads from disk, the server needs to send the TileEntity information to the client
 	//  it uses getUpdatePacket(), getUpdateTag(), onDataPacket(), and handleUpdateTag() to do this:
@@ -90,32 +87,16 @@ public class TileEntityGrappleModifier extends BlockEntity {
 	//  Not really required for this example since we only use the timer on the client, but included anyway for illustration
 	@Override
 	@Nullable
-	public ClientboundBlockEntityDataPacket getUpdatePacket()
-	{
-		CompoundTag nbtTagCompound = new CompoundTag();
-		this.saveAdditional(nbtTagCompound);
+	public Packet<ClientPlayPacketListener> toUpdatePacket() {
 		int tileEntityType = 42;  // arbitrary number; only used for vanilla TileEntities.  You can use it, or not, as you want.
-		return ClientboundBlockEntityDataPacket.create(this);
+		return BlockEntityUpdateS2CPacket.create(this);
 	}
 
-	@Override
-	public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
-		BlockState blockState = this.level.getBlockState(this.worldPosition);
-		this.load(pkt.getTag());   // read from the nbt in the packet
-	}
-
-	/* Creates a tag containing all of the TileEntity information, used by vanilla to transmit from server to client
+	/**
+	 * Creates a tag containing all the TileEntity information, used by vanilla to transmit from server to client
 	 */
 	@Override
-	public CompoundTag getUpdateTag()
-	{
-		CompoundTag nbtTagCompound = new CompoundTag();
-		this.saveAdditional(nbtTagCompound);
-		return nbtTagCompound;
-	}
-
-	@Override
-	public void handleUpdateTag(CompoundTag tag) {
-		this.load(tag);
+	public NbtCompound toInitialChunkDataNbt() {
+		return createNbt();
 	}
 }

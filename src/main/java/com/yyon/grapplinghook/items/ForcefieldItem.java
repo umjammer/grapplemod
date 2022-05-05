@@ -1,61 +1,60 @@
 package com.yyon.grapplinghook.items;
 
-import com.yyon.grapplinghook.client.ClientProxyInterface;
-import com.yyon.grapplinghook.common.CommonSetup;
+import java.util.List;
+
 import com.yyon.grapplinghook.controllers.GrappleController;
 import com.yyon.grapplinghook.utils.GrapplemodUtils;
 import com.yyon.grapplinghook.utils.Vec;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraft.client.item.TooltipContext;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.ActionResult;
+import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
-import java.util.List;
+import static com.yyon.grapplinghook.client.ClientProxy.McKeys;
+import static com.yyon.grapplinghook.client.ClientSetup.clientProxy;
+
 
 public class ForcefieldItem extends Item {
-	public ForcefieldItem() {
-		super(new Item.Properties().stacksTo(1).tab(CommonSetup.tabGrapplemod));
+	public ForcefieldItem(Settings settings) {
+		super(settings.maxCount(1));
 	}
-	
-	public void doRightClick(ItemStack stack, Level worldIn, Player player) {
-		if (worldIn.isClientSide) {
+
+	public void doRightClick(ItemStack stack, World worldIn, PlayerEntity player) {
+		if (worldIn.isClient()) {
 			int playerid = player.getId();
-			GrappleController oldController = ClientProxyInterface.proxy.unregisterController(playerid);
+			GrappleController oldController = clientProxy.unregisterController(playerid);
 			if (oldController == null || oldController.controllerId == GrapplemodUtils.AIRID) {
-				ClientProxyInterface.proxy.createControl(GrapplemodUtils.REPELID, -1, playerid, worldIn, new Vec(0,0,0), null, null);
+				clientProxy.createControl(GrapplemodUtils.REPELID, -1, playerid, worldIn, new Vec(0,0,0), null, null);
 			}
 		}
 	}
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level worldIn, Player playerIn, InteractionHand hand) {
-    	ItemStack stack = playerIn.getItemInHand(hand);
-        this.doRightClick(stack, worldIn, playerIn);
+	public ActionResult useOnBlock(ItemUsageContext context) {
+    	ItemStack stack = context.getPlayer().getMainHandStack();
+        this.doRightClick(stack, context.getWorld(), context.getPlayer());
         
-    	return InteractionResultHolder.success(stack);
+    	return ActionResult.SUCCESS;
 	}
     
 	@Override
-	@OnlyIn(Dist.CLIENT)
-	public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> list, TooltipFlag par4) {
-		list.add(new TextComponent(ClientProxyInterface.proxy.localize("grappletooltip.repelleritem.desc")));
-		list.add(new TextComponent(ClientProxyInterface.proxy.localize("grappletooltip.repelleritem2.desc")));
-		list.add(new TextComponent(""));
-		list.add(new TextComponent(ClientProxyInterface.proxy.getKeyname(ClientProxyInterface.McKeys.keyBindUseItem) + ClientProxyInterface.proxy.localize("grappletooltip.repelleritemon.desc")));
-		list.add(new TextComponent(ClientProxyInterface.proxy.getKeyname(ClientProxyInterface.McKeys.keyBindUseItem) + ClientProxyInterface.proxy.localize("grappletooltip.repelleritemoff.desc")));
-		list.add(new TextComponent(ClientProxyInterface.proxy.getKeyname(ClientProxyInterface.McKeys.keyBindSneak) + ClientProxyInterface.proxy.localize("grappletooltip.repelleritemslow.desc")));
-		list.add(new TextComponent(ClientProxyInterface.proxy.getKeyname(ClientProxyInterface.McKeys.keyBindForward) + ", " +
-				ClientProxyInterface.proxy.getKeyname(ClientProxyInterface.McKeys.keyBindLeft) + ", " +
-				ClientProxyInterface.proxy.getKeyname(ClientProxyInterface.McKeys.keyBindBack) + ", " +
-				ClientProxyInterface.proxy.getKeyname(ClientProxyInterface.McKeys.keyBindRight) +
-				" " + ClientProxyInterface.proxy.localize("grappletooltip.repelleritemmove.desc")));
+	public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
+		tooltip.add(new TranslatableText("grappletooltip.repelleritem.desc"));
+		tooltip.add(new TranslatableText("grappletooltip.repelleritem2.desc"));
+		tooltip.add(Text.of(""));
+		tooltip.add(new TranslatableText(clientProxy.getKeyname(McKeys.keyBindUseItem)).append(new TranslatableText("grappletooltip.repelleritemon.desc")));
+		tooltip.add(new TranslatableText(clientProxy.getKeyname(McKeys.keyBindUseItem)).append(new TranslatableText("grappletooltip.repelleritemoff.desc")));
+		tooltip.add(new TranslatableText(clientProxy.getKeyname(McKeys.keyBindSneak)).append(new TranslatableText("grappletooltip.repelleritemslow.desc")));
+		tooltip.add(new TranslatableText(clientProxy.getKeyname(McKeys.keyBindForward)).append(", ").append(
+				new TranslatableText(clientProxy.getKeyname(McKeys.keyBindLeft)).append(", ")).append(
+				new TranslatableText(clientProxy.getKeyname(McKeys.keyBindBack)).append(", ")).append(
+				new TranslatableText(clientProxy.getKeyname(McKeys.keyBindRight)).append(" ")).append(
+				new TranslatableText("grappletooltip.repelleritemmove.desc")));
 	}
 }

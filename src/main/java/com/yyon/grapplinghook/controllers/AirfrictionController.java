@@ -1,13 +1,3 @@
-package com.yyon.grapplinghook.controllers;
-
-import com.yyon.grapplinghook.client.ClientProxyInterface;
-import com.yyon.grapplinghook.config.GrappleConfig;
-import com.yyon.grapplinghook.utils.GrappleCustomization;
-import com.yyon.grapplinghook.utils.Vec;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.Level;
-
 /*
  * This file is part of GrappleMod.
 
@@ -25,25 +15,37 @@ import net.minecraft.world.level.Level;
     along with GrappleMod.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+package com.yyon.grapplinghook.controllers;
+
+import com.yyon.grapplinghook.config.GrappleConfig;
+import com.yyon.grapplinghook.utils.GrappleCustomization;
+import com.yyon.grapplinghook.utils.Vec;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.world.World;
+
+import static com.yyon.grapplinghook.client.ClientSetup.clientProxy;
+
+
 public class AirfrictionController extends GrappleController {
 	public double playerMovementMult = 0.5;
-	
+
 	public int ignoreGroundCounter = 0;
 	public boolean wasSliding = false;
 	public boolean wasWallrunning = false;
 	public boolean wasRocket = false;
 	public boolean firstTickSinceCreated = true;
-	
-	public AirfrictionController(int grapplehookEntityId, int entityId, Level world, Vec pos, int id, GrappleCustomization custom) {
+
+	public AirfrictionController(int grapplehookEntityId, int entityId, World world, Vec pos, int id, GrappleCustomization custom) {
 		super(grapplehookEntityId, entityId, world, pos, id, custom);
 	}
-	
+
 	@Override
 	public void updatePlayerPos() {
 		Entity entity = this.entity;
-		
+
 		if (entity == null) {return;}
-		
+
 		if (entity.getVehicle() != null) {
 			this.unattach();
 			this.updateServerPos();
@@ -51,7 +53,7 @@ public class AirfrictionController extends GrappleController {
 		}
 
 		Vec additionalmotion = new Vec(0,0,0);
-		
+
 		if (GrappleConfig.getConf().other.dont_override_movement_in_air && !entity.isOnGround() && !wasSliding && !wasWallrunning && !wasRocket && !firstTickSinceCreated) {
 			motion = Vec.motionVec(entity);
 			this.unattach();
@@ -59,24 +61,24 @@ public class AirfrictionController extends GrappleController {
 		}
 
 		if (this.attached) {
-			boolean issliding = ClientProxyInterface.proxy.isSliding(entity, motion);
-			
+			boolean issliding = clientProxy.isSliding(entity, motion);
+
 			if (issliding && !wasSliding) {
 				playSlideSound();
 			}
-			
+
 			if (this.ignoreGroundCounter <= 0) {
-				this.normalGround(issliding);					
+				this.normalGround(issliding);
 				this.normalCollisions(issliding);
 			}
 
 			this.applyAirFriction();
-			
-			if (this.entity.isInWater() || this.entity.isInLava()) {
+
+			if (this.entity.isInsideWaterOrBubbleColumn() || this.entity.isInLava()) {
 				this.unattach();
 				return;
 			}
-			
+
 			boolean doesrocket = false;
 			if (this.custom != null) {
 				if (this.custom.rocket) {
@@ -140,14 +142,14 @@ public class AirfrictionController extends GrappleController {
 					motion.z = new_motion_horizontal.z;
 				}
 			}
-			
+
 			if (entity instanceof LivingEntity) {
 				LivingEntity entityliving = (LivingEntity) entity;
 				if (entityliving.isFallFlying()) {
 					this.unattach();
 				}
 			}
-			
+
 			Vec gravity = new Vec(0, -0.05, 0);
 
 			if (!wallrun) {
@@ -155,17 +157,17 @@ public class AirfrictionController extends GrappleController {
 			}
 
 			Vec newmotion;
-			
+
 			newmotion = motion.add(additionalmotion);
-			
+
 //			if (wallrun) {
 //				newmotion.add_ip(this.walldirection);
 //			}
 
 			newmotion.setMotion(entity);
-			
+
 			this.updateServerPos();
-			
+
 			if (entity.isOnGround()) {
 				if (!issliding) {
 					if (!wallrun) {
@@ -180,7 +182,7 @@ public class AirfrictionController extends GrappleController {
 				}
 			}
 			if (ignoreGroundCounter > 0) { ignoreGroundCounter--; }
-			
+
 			wasSliding = issliding;
 			wasWallrunning = wallrun;
 			wasRocket = doesrocket;
@@ -192,13 +194,13 @@ public class AirfrictionController extends GrappleController {
 		super.receiveEnderLaunch(x, y, z);
 		this.ignoreGroundCounter = 2;
 	}
-	
+
 	public void slidingJump() {
 		super.slidingJump();
 		this.ignoreGroundCounter = 2;
 	}
-	
+
 	public void playSlideSound() {
-		ClientProxyInterface.proxy.playSlideSound(this.entity);
+		clientProxy.playSlideSound(this.entity);
 	}
 }

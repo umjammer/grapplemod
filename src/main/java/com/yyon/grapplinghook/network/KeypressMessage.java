@@ -1,13 +1,3 @@
-package com.yyon.grapplinghook.network;
-
-import com.yyon.grapplinghook.items.KeypressItem;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.NetworkEvent;
-
 /*
  * This file is part of GrappleMod.
 
@@ -25,13 +15,35 @@ import net.minecraftforge.network.NetworkEvent;
     along with GrappleMod.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-public class KeypressMessage extends BaseMessageServer {
-	
+package com.yyon.grapplinghook.network;
+
+import com.yyon.grapplinghook.items.KeypressItem;
+import io.netty.buffer.Unpooled;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
+
+import static com.yyon.grapplinghook.grapplemod.MODID;
+
+
+public class KeypressMessage implements BaseMessageServer {
+
+    public static final Identifier IDENTIFIER = new Identifier(MODID, "key_press");
+
+	@Override
+	public Identifier getIdentifier() {
+		return IDENTIFIER;
+	}
+
 	KeypressItem.Keys key;
 	boolean isDown;
 
-    public KeypressMessage(FriendlyByteBuf buf) {
-    	super(buf);
+    public KeypressMessage(PacketByteBuf buf) {
+		this.key = KeypressItem.Keys.values()[buf.readInt()];
+		this.isDown = buf.readBoolean();
     }
 
     public KeypressMessage(KeypressItem.Keys thekey, boolean isDown) {
@@ -39,22 +51,17 @@ public class KeypressMessage extends BaseMessageServer {
     	this.isDown = isDown;
     }
 
-    public void decode(FriendlyByteBuf buf) {
-    	this.key = KeypressItem.Keys.values()[buf.readInt()];
-    	this.isDown = buf.readBoolean();
-    }
-
-    public void encode(FriendlyByteBuf buf) {
+	public PacketByteBuf toPacket() {
+		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
     	buf.writeInt(this.key.ordinal());
     	buf.writeBoolean(this.isDown);
+		return buf;
     }
 
-	@Override
-    public void processMessage(NetworkEvent.Context ctx) {
-    	final ServerPlayer player = ctx.getSender();
-        
+    public void processMessage(final ServerPlayerEntity player) {
+
 		if (player != null) {
-			ItemStack stack = player.getItemInHand(InteractionHand.MAIN_HAND);
+			ItemStack stack = player.getStackInHand(Hand.MAIN_HAND);
 			if (stack != null) {
 				Item item = stack.getItem();
 				if (item instanceof KeypressItem) {
@@ -67,7 +74,7 @@ public class KeypressMessage extends BaseMessageServer {
 				}
 			}
 
-			stack = player.getItemInHand(InteractionHand.OFF_HAND);
+			stack = player.getStackInHand(Hand.OFF_HAND);
 			if (stack != null) {
 				Item item = stack.getItem();
 				if (item instanceof KeypressItem) {
@@ -76,7 +83,6 @@ public class KeypressMessage extends BaseMessageServer {
 					} else {
 						((KeypressItem)item).onCustomKeyUp(stack, player, key, false);
 					}
-					return;
 				}
 			}
 		}

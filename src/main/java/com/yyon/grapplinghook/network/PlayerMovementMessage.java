@@ -1,10 +1,3 @@
-package com.yyon.grapplinghook.network;
-
-import com.yyon.grapplinghook.utils.Vec;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkEvent;
-
 /*
  * This file is part of GrappleMod.
 
@@ -21,9 +14,25 @@ import net.minecraftforge.network.NetworkEvent;
     You should have received a copy of the GNU General Public License
     along with GrappleMod.  If not, see <http://www.gnu.org/licenses/>.
  */
+package com.yyon.grapplinghook.network;
 
-public class PlayerMovementMessage extends BaseMessageServer {
-   
+import com.yyon.grapplinghook.utils.Vec;
+import io.netty.buffer.Unpooled;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
+
+import static com.yyon.grapplinghook.grapplemod.MODID;
+
+public class PlayerMovementMessage implements BaseMessageServer {
+
+    public static final Identifier IDENTIFIER = new Identifier(MODID, "player_movement");
+
+	@Override
+	public Identifier getIdentifier() {
+		return IDENTIFIER;
+	}
+
 	public int entityId;
 	public double x;
 	public double y;
@@ -31,11 +40,22 @@ public class PlayerMovementMessage extends BaseMessageServer {
 	public double mx;
 	public double my;
 	public double mz;
-	
-	public PlayerMovementMessage(FriendlyByteBuf buf) {
-		super(buf);
+
+	public PlayerMovementMessage(PacketByteBuf buf) {
+		try {
+			this.entityId = buf.readInt();
+			this.x = buf.readDouble();
+			this.y = buf.readDouble();
+			this.z = buf.readDouble();
+			this.mx = buf.readDouble();
+			this.my = buf.readDouble();
+			this.mz = buf.readDouble();
+		} catch (Exception e) {
+			System.out.print("Playermovement error: ");
+			System.out.println(buf);
+		}
 	}
-	
+
     public PlayerMovementMessage(int entityId, double x, double y, double z, double mx, double my, double mz) {
     	this.entityId = entityId;
     	this.x = x;
@@ -46,22 +66,8 @@ public class PlayerMovementMessage extends BaseMessageServer {
     	this.mz = mz;
     }
 
-    public void decode(FriendlyByteBuf buf) {
-    	try {
-	    	this.entityId = buf.readInt();
-	    	this.x = buf.readDouble();
-	    	this.y = buf.readDouble();
-	    	this.z = buf.readDouble();
-	    	this.mx = buf.readDouble();
-	    	this.my = buf.readDouble();
-	    	this.mz = buf.readDouble();
-    	} catch (Exception e) {
-    		System.out.print("Playermovement error: ");
-    		System.out.println(buf);
-    	}
-    }
-
-    public void encode(FriendlyByteBuf buf) {
+	public PacketByteBuf toPacket() {
+		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
         buf.writeInt(entityId);
         buf.writeDouble(x);
         buf.writeDouble(y);
@@ -69,18 +75,17 @@ public class PlayerMovementMessage extends BaseMessageServer {
         buf.writeDouble(mx);
         buf.writeDouble(my);
         buf.writeDouble(mz);
-        
-    }
+		return buf;
+	}
 
-    public void processMessage(NetworkEvent.Context ctx) {
-    	final ServerPlayer referencedPlayer = ctx.getSender();
-        
-		if(referencedPlayer.getId() == this.entityId) {
+    public void processMessage(final ServerPlayerEntity referencedPlayer) {
+
+		if (referencedPlayer.getId() == this.entityId) {
 			new Vec(this.x, this.y, this.z).setPos(referencedPlayer);
 			new Vec(this.mx, this.my, this.mz).setMotion(referencedPlayer);
 
-			referencedPlayer.connection.resetPosition();
-			
+			referencedPlayer.networkHandler.syncWithPlayerPosition(); // TODO
+
 			if (!referencedPlayer.isOnGround()) {
 				if (this.my >= 0) {
 					referencedPlayer.fallDistance = 0;

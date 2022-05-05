@@ -1,22 +1,3 @@
-package com.yyon.grapplinghook.items;
-
-import com.yyon.grapplinghook.client.ClientProxyInterface;
-import com.yyon.grapplinghook.common.CommonSetup;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-
-import javax.annotation.Nullable;
-import java.util.List;
-
 /*
  * This file is part of GrappleMod.
 
@@ -34,32 +15,51 @@ import java.util.List;
     along with GrappleMod.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+package com.yyon.grapplinghook.items;
+
+import java.util.List;
+
+import com.yyon.grapplinghook.client.ClientProxy.McKeys;
+import net.minecraft.client.item.TooltipContext;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.ActionResult;
+import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
+
+import static com.yyon.grapplinghook.client.ClientSetup.clientProxy;
+
+
 public class EnderStaffItem extends Item {
-	
-	public EnderStaffItem() {
-		super(new Item.Properties().stacksTo(1).tab(CommonSetup.tabGrapplemod));
+
+	public EnderStaffItem(Settings settings) {
+		super(settings.maxCount(1));
 	}
-	
-	public void doRightClick(ItemStack stack, Level worldIn, Player player) {
-		if (worldIn.isClientSide) {
-			ClientProxyInterface.proxy.launchPlayer(player);
+
+	public void doRightClick(ItemStack stack, World worldIn, PlayerEntity player) {
+		if (worldIn.isClient()) {
+			clientProxy.launchPlayer(player);
 		}
 	}
-	
-    @Override
-    public InteractionResultHolder<ItemStack> use(Level worldIn, Player playerIn, InteractionHand hand) {
-    	ItemStack stack = playerIn.getItemInHand(hand);
-        this.doRightClick(stack, worldIn, playerIn);
 
-    	return InteractionResultHolder.success(stack);
+    @Override
+	public ActionResult useOnBlock(ItemUsageContext context) {
+    	ItemStack stack = context.getPlayer().getMainHandStack();
+        this.doRightClick(stack, context.getWorld(), context.getPlayer());
+
+    	return ActionResult.SUCCESS;
 	}
     
 	@Override
-	@OnlyIn(Dist.CLIENT)
-	public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> list, TooltipFlag par4) {
-		list.add(new TextComponent(ClientProxyInterface.proxy.localize("grappletooltip.launcheritem.desc")));
-		list.add(new TextComponent(""));
-		list.add(new TextComponent(ClientProxyInterface.proxy.localize("grappletooltip.launcheritemaim.desc")));
-		list.add(new TextComponent(ClientProxyInterface.proxy.getKeyname(ClientProxyInterface.McKeys.keyBindUseItem) + ClientProxyInterface.proxy.localize("grappletooltip.launcheritemcontrols.desc")));
+	public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
+		tooltip.add(new TranslatableText("grappletooltip.launcheritem.desc"));
+		tooltip.add(Text.of(""));
+		tooltip.add(new TranslatableText("grappletooltip.launcheritemaim.desc"));
+		tooltip.add(new LiteralText(clientProxy.getKeyname(McKeys.keyBindUseItem)).append(new TranslatableText("grappletooltip.launcheritemcontrols.desc")));
 	}
 }

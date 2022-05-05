@@ -1,15 +1,3 @@
-package com.yyon.grapplinghook.network;
-
-import com.yyon.grapplinghook.entities.grapplehook.GrapplehookEntity;
-import net.minecraft.client.Minecraft;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.Level;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.network.NetworkEvent;
-
-
 /*
  * This file is part of GrappleMod.
 
@@ -27,15 +15,37 @@ import net.minecraftforge.network.NetworkEvent;
     along with GrappleMod.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-public class GrappleAttachPosMessage extends BaseMessageClient {
-   
-	public int id;
+package com.yyon.grapplinghook.network;
+
+import com.yyon.grapplinghook.entities.grapplehook.GrapplehookEntity;
+import io.netty.buffer.Unpooled;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.Entity;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
+
+import static com.yyon.grapplinghook.grapplemod.MODID;
+
+public class GrappleAttachPosMessage implements BaseMessageClient {
+
+    public static final Identifier IDENTIFIER = new Identifier(MODID, "grapple_attach_pos");
+
+    @Override
+    public Identifier getIdentifier() {
+        return IDENTIFIER;
+    }
+
+    public int id;
 	public double x;
 	public double y;
 	public double z;
 
-    public GrappleAttachPosMessage(FriendlyByteBuf buf) {
-    	super(buf);
+    public GrappleAttachPosMessage(PacketByteBuf buf) {
+        this.id = buf.readInt();
+        this.x = buf.readDouble();
+        this.y = buf.readDouble();
+        this.z = buf.readDouble();
     }
 
     public GrappleAttachPosMessage(int id, double x, double y, double z) {
@@ -45,24 +55,18 @@ public class GrappleAttachPosMessage extends BaseMessageClient {
         this.z = z;
     }
 
-    public void decode(FriendlyByteBuf buf) {
-    	this.id = buf.readInt();
-        this.x = buf.readDouble();
-        this.y = buf.readDouble();
-        this.z = buf.readDouble();
-    }
-
-    public void encode(FriendlyByteBuf buf) {
+    public PacketByteBuf toPacket() {
+        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
     	buf.writeInt(this.id);
         buf.writeDouble(this.x);
         buf.writeDouble(this.y);
         buf.writeDouble(this.z);
+        return buf;
     }
 
-    @OnlyIn(Dist.CLIENT)
-    public void processMessage(NetworkEvent.Context ctx) {
-    	Level world = Minecraft.getInstance().level;
-    	Entity grapple = world.getEntity(this.id);
+    public void processMessage() {
+    	World world = MinecraftClient.getInstance().world;
+    	Entity grapple = world.getEntityById(this.id);
     	if (grapple instanceof GrapplehookEntity) {
         	((GrapplehookEntity) grapple).setAttachPos(this.x, this.y, this.z);
     	}

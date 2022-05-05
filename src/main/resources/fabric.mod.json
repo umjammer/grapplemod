@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "grapplemod",
+  "version": "${version}",
+
+  "name": "Grapple Mod",
+  "description": "Grappling hook mod for Minecraft for Fabric",
+  "authors": [
+    "yyon"
+  ],
+  "contributors": [
+    "umjammer"
+  ],
+  "contact": {
+    "homepage": "https://minecraft.curseforge.com/projects/grapplemod-fabric",
+    "sources": "https://github.com/umjammer/grapplemod",
+    "issues": "https://github.com/umjammer/grapplemod/issues"
+  },
+
+  "license": "All Rights Reserved",
+  "icon": "assets/grapplemod/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.yyon.grapplinghook.common.CommonSetup"
+    ],
+    "client": [
+      "com.yyon.grapplinghook.client.ClientSetup"
+    ]
+  },
+  "mixins": [
+    "grapplemod.mixins.json"
+  ],
+  "accessWidener" : "grapplemod.accesswidener",
+
+  "depends": {
+    "fabricloader": ">=0.7.4",
+    "fabric": "*",
+    "minecraft": "1.18.x",
+    "java": ">=17"
+  }
+}

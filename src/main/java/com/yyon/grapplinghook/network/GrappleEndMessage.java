@@ -1,13 +1,3 @@
-package com.yyon.grapplinghook.network;
-
-import com.yyon.grapplinghook.server.ServerControllerManager;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.Level;
-import net.minecraftforge.network.NetworkEvent;
-
-import java.util.HashSet;
-
 /*
  * This file is part of GrappleMod.
 
@@ -25,46 +15,66 @@ import java.util.HashSet;
     along with GrappleMod.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-public class GrappleEndMessage extends BaseMessageServer {
-   
-	public int entityId;
-	public HashSet<Integer> hookEntityIds;
+package com.yyon.grapplinghook.network;
 
-    public GrappleEndMessage(FriendlyByteBuf buf) {
-    	super(buf);
+import java.util.HashSet;
+import java.util.Set;
+
+import com.yyon.grapplinghook.server.ServerControllerManager;
+import io.netty.buffer.Unpooled;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
+
+import static com.yyon.grapplinghook.common.CommonSetup.serverControllerManager;
+import static com.yyon.grapplinghook.grapplemod.MODID;
+
+
+public class GrappleEndMessage implements BaseMessageServer {
+
+    public static final Identifier IDENTIFIER = new Identifier(MODID, "grapple_end");
+
+	@Override
+	public Identifier getIdentifier() {
+		return IDENTIFIER;
+	}
+
+	public int entityId;
+	public Set<Integer> hookEntityIds;
+
+    public GrappleEndMessage(PacketByteBuf buf)	{
+		this.entityId = buf.readInt();
+		int size = buf.readInt();
+		this.hookEntityIds = new HashSet<Integer>();
+		for (int i = 0; i < size; i++) {
+			this.hookEntityIds.add(buf.readInt());
+		}
     }
 
-    public GrappleEndMessage(int entityId, HashSet<Integer> hookEntityIds) {
+    public GrappleEndMessage(int entityId, Set<Integer> hookEntityIds) {
     	this.entityId = entityId;
     	this.hookEntityIds = hookEntityIds;
     }
 
-    public void decode(FriendlyByteBuf buf) {
-    	this.entityId = buf.readInt();
-    	int size = buf.readInt();
-    	this.hookEntityIds = new HashSet<Integer>();
-    	for (int i = 0; i < size; i++) {
-    		this.hookEntityIds.add(buf.readInt());
-    	}
-    }
-
-    public void encode(FriendlyByteBuf buf) {
+	public PacketByteBuf toPacket() {
+		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
     	buf.writeInt(this.entityId);
     	buf.writeInt(this.hookEntityIds.size());
     	for (int id : this.hookEntityIds) {
         	buf.writeInt(id);
     	}
+		return buf;
     }
 
-    public void processMessage(NetworkEvent.Context ctx) {
+    public void processMessage(ServerPlayerEntity player) {
 		int id = this.entityId;
-		
-		ServerPlayer player = ctx.getSender();
+
 		if (player == null) {
 			return;
 		}
-		Level w = player.level;
-		
-		ServerControllerManager.receiveGrappleEnd(id, w, this.hookEntityIds);
+		World w = player.world;
+
+		serverControllerManager.receiveGrappleEnd(id, w, this.hookEntityIds);
     }
 }
