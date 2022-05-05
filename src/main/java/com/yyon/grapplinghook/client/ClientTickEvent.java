@@ -13,6 +13,11 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 
 import static com.yyon.grapplinghook.client.ClientSetup.clientControllerManager;
+import static com.yyon.grapplinghook.client.ClientSetup.key_boththrow;
+import static com.yyon.grapplinghook.client.ClientSetup.key_enderlaunch;
+import static com.yyon.grapplinghook.client.ClientSetup.key_leftthrow;
+import static com.yyon.grapplinghook.client.ClientSetup.key_rightthrow;
+import static com.yyon.grapplinghook.client.ClientSetup.key_rocket;
 
 
 /**
@@ -30,7 +35,7 @@ public class ClientTickEvent {
 
                 if (MinecraftClient.getInstance().currentScreen == null) {
                     // keep in same order as enum from KeypressItem
-                    boolean[] keys = {ClientSetup.key_enderlaunch.isPressed(), ClientSetup.key_leftthrow.isPressed(), ClientSetup.key_rightthrow.isPressed(), ClientSetup.key_boththrow.isPressed(), ClientSetup.key_rocket.isPressed()};
+                    boolean[] keys = {key_enderlaunch.isPressed(), key_leftthrow.isPressed(), key_rightthrow.isPressed(), key_boththrow.isPressed(), key_rocket.isPressed()};
 
                     for (int i = 0; i < keys.length; i++) {
                         boolean iskeydown = keys[i];

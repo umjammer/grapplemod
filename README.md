@@ -1,3 +1,6 @@
+[![Fabric](https://img.shields.io/badge/Mod_Loader-Fabric-blue)](https://fabricmc.net/)
+[![Minecraft](https://img.shields.io/badge/Minecraft-1.18.2-green)](https://www.minecraft.net/)
+
 # Grappling Hook Fabric Mod for Minecraft
 
 ![icon](src/main/resources/icon.png)

@@ -40,19 +40,13 @@ import static com.yyon.grapplinghook.grapplemod.MODID;
 public class RenderGrapplehookEntity<T extends GrapplehookEntity> extends EntityRenderer<T> {
 
 //    protected final Item item;
-    private static final Identifier HOOK_TEXTURES = new Identifier(MODID, "textures/items/grapplinghook");
-    private static final Identifier ROPE_TEXTURES = new Identifier(MODID, "textures/entity/rope");
+    private static final Identifier HOOK_TEXTURES = new Identifier(MODID + ":textures/items/grapplinghook.png");
+    private static final Identifier ROPE_TEXTURES = new Identifier(MODID + ":textures/entity/rope.png");
 
 	public RenderGrapplehookEntity(EntityRendererFactory.Context context) {
 		super(context);
 	}
 
-    /**
-     * Actually renders the given argument. This is a synthetic bridge method, always casting down its argument and then
-     * handing it off to a worker function which does the actual work. In all probabilty, the class Render is generic
-     * (Render<T extends Entity>) and this method has signature public void func_76986_a(T entity, double d, double d1,
-     * double d2, float f, float f1). But JAD is pre 1.5 so doe
-     */
     @Override
 	public void render(T hookEntity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
 		if (hookEntity == null || !hookEntity.isAlive()) {
@@ -175,7 +169,7 @@ public class RenderGrapplehookEntity<T extends GrapplehookEntity> extends Entity
     
     // vertex for the hook
     private static void vertex(VertexConsumer vertexConsumer, Matrix4f matrix4f, Matrix3f matrix3f, int light, float x, int y, int u, int v) {
-        vertexConsumer.vertex(matrix4f, x - 0.5F, (float)y - 0.5F, 0.0F).color(255, 255, 255, 255).texture((float) u, (float) v).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(matrix3f, 0.0F, 1.0F, 0.0F).next();
+        vertexConsumer.vertex(matrix4f, x - 0.5F, (float)y - 0.5F, 0.0F).color(255, 255, 255, 255).texture(u, v).overlay(OverlayTexture.DEFAULT_UV).light(light).normal(matrix3f, 0.0F, 1.0F, 0.0F).next();
 	}
 
     // draw a segment of the rope

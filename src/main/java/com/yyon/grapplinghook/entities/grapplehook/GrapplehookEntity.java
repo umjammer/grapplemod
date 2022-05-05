@@ -440,7 +440,7 @@ public class GrapplehookEntity extends ThrownItemEntity {
 		new GrappleAttachMessage(this.getId(), this.getTrackedPosition().x, this.getTrackedPosition().y, this.getTrackedPosition().z, this.getControlId(), this.shootingEntityID, blockpos, this.segmentHandler.segments, this.segmentHandler.segmentTopSides, this.segmentHandler.segmentBottomSides, this.customization).send((ServerPlayerEntity) shootingEntity);
 
 		GrappleAttachPosMessage msg = new GrappleAttachPosMessage(this.getId(), this.getTrackedPosition().x, this.getTrackedPosition().y, this.getTrackedPosition().z);
-		// this.world.getChunk(new BlockPos(this.getTrackedPosition().x, this.getTrackedPosition().y, this.getTrackedPosition().z));
+		//this.world.getChunk(new BlockPos(this.getTrackedPosition().x, this.getTrackedPosition().y, this.getTrackedPosition().z));
 		msg.send((ServerPlayerEntity) shootingEntity);
 	}
 

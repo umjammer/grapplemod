@@ -13,8 +13,6 @@ import com.yyon.grapplinghook.network.GrappleDetachMessage;
 import com.yyon.grapplinghook.network.LoggedInMessage;
 import com.yyon.grapplinghook.network.SegmentMessage;
 import com.yyon.grapplinghook.utils.dist.DistExecutor;
-import com.yyon.grapplinghook.utils.key.FabricKeyBindingManager;
-import com.yyon.grapplinghook.utils.key.IKeyBindingManager;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -61,9 +59,8 @@ public class ClientSetup implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		// register all the key bindings
-		IKeyBindingManager keyBindingManager = IKeyBindingManager.getInstance();
 		for (KeyBinding keyBinding : keyBindings) {
-			keyBindingManager.register(keyBinding);
+			KeyBindingHelper.registerKeyBinding(keyBinding);
 		}
 
 		// client network

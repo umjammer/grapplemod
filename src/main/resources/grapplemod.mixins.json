@@ -8,10 +8,11 @@
     "ServerPlayerEntityMixin"
   ],
   "client": [
-    "GameRendererMixin",
     "BlockBreakMixin",
+    "GameRendererMixin",
     "KeyboardMixin",
-    "PlayerEntityMixin"
+    "PlayerEntityMixin",
+    "ClientPlayerEntityMixin"
   ],
   "minVersion": "0.8.4"
 }

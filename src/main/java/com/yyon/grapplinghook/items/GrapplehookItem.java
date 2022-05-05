@@ -84,16 +84,16 @@ public class GrapplehookItem extends Item implements KeypressItem {
 	}
 
 	public void setHookEntityLeft(Entity entity, GrapplehookEntity hookEntity) {
-		GrapplehookItem.grapplehookEntitiesLeft.put(entity, hookEntity);
+		grapplehookEntitiesLeft.put(entity, hookEntity);
 	}
 
 	public void setHookEntityRight(Entity entity, GrapplehookEntity hookEntity) {
-		GrapplehookItem.grapplehookEntitiesRight.put(entity, hookEntity);
+		grapplehookEntitiesRight.put(entity, hookEntity);
 	}
 
 	public GrapplehookEntity getHookEntityLeft(Entity entity) {
-		if (GrapplehookItem.grapplehookEntitiesLeft.containsKey(entity)) {
-			GrapplehookEntity hookEntity = GrapplehookItem.grapplehookEntitiesLeft.get(entity);
+		if (grapplehookEntitiesLeft.containsKey(entity)) {
+			GrapplehookEntity hookEntity = grapplehookEntitiesLeft.get(entity);
 			if (hookEntity != null && hookEntity.isAlive()) {
 				return hookEntity;
 			}
@@ -101,8 +101,8 @@ public class GrapplehookItem extends Item implements KeypressItem {
 		return null;
 	}
 	public GrapplehookEntity getHookEntityRight(Entity entity) {
-		if (GrapplehookItem.grapplehookEntitiesRight.containsKey(entity)) {
-			GrapplehookEntity hookEntity = GrapplehookItem.grapplehookEntitiesRight.get(entity);
+		if (grapplehookEntitiesRight.containsKey(entity)) {
+			GrapplehookEntity hookEntity = grapplehookEntitiesRight.get(entity);
 			if (hookEntity != null && hookEntity.isAlive()) {
 				return hookEntity;
 			}
