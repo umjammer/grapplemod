@@ -46,7 +46,7 @@ public class Vec {
 	}
 
 	public static Vec positionVec(Entity e) {
-		return new Vec(e.getTrackedPosition());
+		return new Vec(e.getPos());
 	}
 
 	public static Vec partialPositionVec(Entity e, double partialTicks) {

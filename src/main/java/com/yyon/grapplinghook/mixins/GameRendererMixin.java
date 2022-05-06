@@ -15,6 +15,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import static com.yyon.grapplinghook.client.ClientSetup.clientControllerManager;
+
 
 /**
  * @forge.event CameraSetup
@@ -38,8 +40,8 @@ public class GameRendererMixin {
 
         int id = player.getId();
         int targetCameraTilt = 0;
-        if (ClientControllerManager.controllers.containsKey(id)) {
-            GrappleController controller = ClientControllerManager.controllers.get(id);
+        if (clientControllerManager.controllers.containsKey(id)) {
+            GrappleController controller = clientControllerManager.controllers.get(id);
             if (controller instanceof AirfrictionController afcontroller) {
                 if (afcontroller.wasWallrunning) {
                     Vec walldirection = afcontroller.getWallDirection();

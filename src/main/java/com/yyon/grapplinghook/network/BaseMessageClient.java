@@ -1,5 +1,6 @@
 package com.yyon.grapplinghook.network;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -17,9 +18,9 @@ public interface BaseMessageClient {
 	PacketByteBuf toPacket();
 
 	/** to client */
-	default void send(ServerPlayerEntity player) {
-		if (player == null) {
-			LOGGER.warn("player is null: " + this.getClass().getName());
+	default void send(Entity entity) {
+		if (!(entity instanceof ServerPlayerEntity player)) {
+			LOGGER.warn("entity is not a player: " + this.getClass().getName());
 		} else {
 			player.networkHandler.sendPacket(new CustomPayloadS2CPacket(getIdentifier(), toPacket()));
 		}

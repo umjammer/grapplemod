@@ -37,7 +37,7 @@ import net.minecraft.util.math.Vec3f;
 import static com.yyon.grapplinghook.grapplemod.MODID;
 
 
-public class RenderGrapplehookEntity<T extends GrapplehookEntity> extends EntityRenderer<T> {
+public class RenderGrapplehookEntity extends EntityRenderer<GrapplehookEntity> {
 
 //    protected final Item item;
     private static final Identifier HOOK_TEXTURES = new Identifier(MODID + ":textures/items/grapplinghook.png");
@@ -48,7 +48,7 @@ public class RenderGrapplehookEntity<T extends GrapplehookEntity> extends Entity
 	}
 
     @Override
-	public void render(T hookEntity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
+	public void render(GrapplehookEntity hookEntity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
 		if (hookEntity == null || !hookEntity.isAlive()) {
 			return;
 		}
@@ -92,19 +92,19 @@ public class RenderGrapplehookEntity<T extends GrapplehookEntity> extends Entity
 
 		// get the offset from the center of the head to the hand
 		Vec hand_offset;
-		if ((this.dispatcher.gameOptions == null || this.dispatcher.gameOptions.getPerspective().isFirstPerson()) && playerentity == MinecraftClient.getInstance().player) {
+		if (this.dispatcher.gameOptions == null || this.dispatcher.gameOptions.getPerspective().ordinal() <= 0) {
 			// if first person
 
 			// base hand offset (no swing, when facing +Z)
-			double d7 = this.dispatcher.gameOptions.fov;
-			d7 = d7 / 100.0D;
-			hand_offset = new Vec((double) hand_right * -0.46D * d7, -0.18D * d7, 0.38D);
+			double fov = this.dispatcher.gameOptions.fov;
+			fov = fov / 100.0D;
+			hand_offset = new Vec((double) hand_right * -0.46D * fov, -0.18D * fov, 0.38D);
 			// apply swing
 			hand_offset = hand_offset.rotatePitch(-f1 * 0.7F);
 			hand_offset = hand_offset.rotateYaw(-f1 * 0.5F);
 			// apply looking direction
-			hand_offset = hand_offset.rotatePitch(-Vec.lerp(tickDelta, playerentity.prevPitch, playerentity.getPitch()) * ((float)Math.PI / 180F));
-			hand_offset = hand_offset.rotateYaw(Vec.lerp(tickDelta, playerentity.prevYaw, playerentity.getYaw()) * ((float)Math.PI / 180F));
+			hand_offset = hand_offset.rotatePitch(-Vec.lerp(tickDelta, playerentity.prevPitch, playerentity.getPitch()) * ((float) Math.PI / 180F));
+			hand_offset = hand_offset.rotateYaw(Vec.lerp(tickDelta, playerentity.prevYaw, playerentity.getYaw()) * ((float) Math.PI / 180F));
 		} else {
 			// if third person
 
@@ -113,7 +113,7 @@ public class RenderGrapplehookEntity<T extends GrapplehookEntity> extends Entity
 			// apply swing
 			hand_offset = hand_offset.rotatePitch(f1 * 0.7F);
 			// apply body rotation
-			hand_offset = hand_offset.rotateYaw(Vec.lerp(tickDelta, playerentity.prevBodyYaw, playerentity.bodyYaw) * ((float)Math.PI / 180F));
+			hand_offset = hand_offset.rotateYaw(Vec.lerp(tickDelta, playerentity.prevBodyYaw, playerentity.bodyYaw) * ((float) Math.PI / 180F));
 		}
 
 		// get the hand position
@@ -224,7 +224,7 @@ public class RenderGrapplehookEntity<T extends GrapplehookEntity> extends Entity
     }
 
     @Override
-	public boolean shouldRender(T entity, Frustum frustum, double x, double y, double z) {
+	public boolean shouldRender(GrapplehookEntity entity, Frustum frustum, double x, double y, double z) {
 		return true;
 	}
 
@@ -237,7 +237,7 @@ public class RenderGrapplehookEntity<T extends GrapplehookEntity> extends Entity
      * Returns the location of an entity's texture. Doesn't seem to be called unless you call Render.bindEntityTexture.
      */
 	@Override
-	public Identifier getTexture(T entity) {
+	public Identifier getTexture(GrapplehookEntity entity) {
         return HOOK_TEXTURES;
 	}
 }

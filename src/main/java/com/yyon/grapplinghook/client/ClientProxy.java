@@ -105,9 +105,9 @@ public class ClientProxy implements ClientProxyInterface {
 		this.playSound(doubleJumpSoundLoc, GrappleConfig.getClientConf().sounds.wallrunjump_sound_volume * 0.7F);
 	}
 
-	List<ItemStack> grapplingHookVariants = null;
+	private List<ItemStack> grapplingHookVariants = null;
 
-	RecipeType<Recipe<PlayerInventory>> grapplehookRecipeType;
+	private RecipeType<Recipe<PlayerInventory>> grapplehookRecipeType;
 
 	@Override
 	public void fillGrappleVariants(ItemGroup tab, List<ItemStack> items) {
@@ -198,17 +198,17 @@ public class ClientProxy implements ClientProxyInterface {
 
 	@Override
 	public GrappleController unregisterController(int entityId) {
-		return ClientControllerManager.unregisterController(entityId);
+		return clientControllerManager.unregisterController(entityId);
 	}
 
 	@Override
 	public double getTimeSinceLastRopeJump(World world) {
-		return GrapplemodUtils.getTime(world) - ClientControllerManager.prevRopeJumpTime;
+		return GrapplemodUtils.getTime(world) - clientControllerManager.prevRopeJumpTime;
 	}
 
 	@Override
 	public void resetRopeJumpTime(World world) {
-		ClientControllerManager.prevRopeJumpTime = GrapplemodUtils.getTime(world);
+		clientControllerManager.prevRopeJumpTime = GrapplemodUtils.getTime(world);
 	}
 
 	@Override

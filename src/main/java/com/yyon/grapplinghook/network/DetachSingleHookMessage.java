@@ -22,6 +22,7 @@ import io.netty.buffer.Unpooled;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 
+import static com.yyon.grapplinghook.client.ClientSetup.clientControllerManager;
 import static com.yyon.grapplinghook.grapplemod.MODID;
 
 public class DetachSingleHookMessage implements BaseMessageClient {
@@ -54,6 +55,6 @@ public class DetachSingleHookMessage implements BaseMessageClient {
     }
     
     public void processMessage() {
-    	ClientControllerManager.receiveGrappleDetachHook(this.id, this.hookid);
+    	clientControllerManager.receiveGrappleDetachHook(this.id, this.hookid);
     }
 }

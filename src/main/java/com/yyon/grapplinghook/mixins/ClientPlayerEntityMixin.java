@@ -18,6 +18,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import static com.yyon.grapplinghook.client.ClientSetup.clientControllerManager;
 import static com.yyon.grapplinghook.grapplemod.LOGGER;
 
 
@@ -39,13 +40,13 @@ public abstract class ClientPlayerEntityMixin {
         }
 
         int id = player.getId();
-        if (ClientControllerManager.controllers.containsKey(id)) {
+        if (clientControllerManager.controllers.containsKey(id)) {
             Input input = player.input;
-            GrappleController control = ClientControllerManager.controllers.get(id);
+            GrappleController control = clientControllerManager.controllers.get(id);
             control.receivePlayerMovementMessage(input.movementSideways, input.movementForward, input.jumping, input.sneaking);
 
             boolean overrideMovement = true;
-            if (MinecraftClient.getInstance().player.isOnGround()) {
+            if (player.isOnGround()) {
                 if (!(control instanceof AirfrictionController) && !(control instanceof ForcefieldController)) {
                     overrideMovement = false;
                 }

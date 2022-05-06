@@ -27,7 +27,7 @@ import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 
-import static com.yyon.grapplinghook.client.ClientControllerManager.controllers;
+import static com.yyon.grapplinghook.client.ClientSetup.clientControllerManager;
 import static com.yyon.grapplinghook.common.CommonSetup.forcefieldItem;
 import static com.yyon.grapplinghook.common.CommonSetup.grapplehookEntityType;
 import static com.yyon.grapplinghook.common.CommonSetup.grapplingHookItem;
@@ -101,11 +101,11 @@ public class ClientSetup implements ClientModInitializer {
 		ModelPredicateProviderRegistry.register(grapplingHookItem, new Identifier("magnet"), (stack, world, entity, seed) -> grapplingHookItem.getPropertyMagnet(stack, world, entity) ? 1 : 0);
 		ModelPredicateProviderRegistry.register(grapplingHookItem, new Identifier("attached"), (stack, world, entity, seed) -> {
 			if (entity == null) {return 0;}
-			return (controllers.containsKey(entity.getId()) && !(controllers.get(entity.getId()) instanceof AirfrictionController)) ? 1 : 0;
+			return (clientControllerManager.controllers.containsKey(entity.getId()) && !(clientControllerManager.controllers.get(entity.getId()) instanceof AirfrictionController)) ? 1 : 0;
 		});
 		ModelPredicateProviderRegistry.register(forcefieldItem, new Identifier("attached"), (stack, world, entity, seed) -> {
 			if (entity == null) {return 0;}
-			return (controllers.containsKey(entity.getId()) && controllers.get(entity.getId()) instanceof ForcefieldController) ? 1 : 0;
+			return (clientControllerManager.controllers.containsKey(entity.getId()) && clientControllerManager.controllers.get(entity.getId()) instanceof ForcefieldController) ? 1 : 0;
 		});
 
 		// predefined events

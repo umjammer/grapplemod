@@ -34,11 +34,12 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import static com.yyon.grapplinghook.client.ClientSetup.clientProxy;
+import static com.yyon.grapplinghook.grapplemod.MODID;
 
 
 public class ClientControllerManager {
 
-	public static Map<Integer, GrappleController> controllers = new HashMap<>();
+	public Map<Integer, GrappleController> controllers = new HashMap<>();
 
 	public Map<Integer, Long> enderLaunchTimer = new HashMap<>();
 
@@ -126,9 +127,7 @@ public class ClientControllerManager {
 				}
 				facing.mult_ip(GrappleConfig.getConf().enderstaff.ender_staff_strength);
 				receiveEnderLaunch(player.getId(), facing.x, facing.y, facing.z);
-//				player.playSound(new SoundEvent(new ResourceLocation("grapplemod", "enderstaff")), GrappleConfig.getClientConf().sounds.enderstaff_sound_volume * 0.5F, 1.0F);
-//				Minecraft.getInstance().getSoundManager().play(new SimpleSound(new ResourceLocation("grapplemod", "enderstaff"), SoundCategory.PLAYERS, GrappleConfig.getClientConf().sounds.enderstaff_sound_volume * 0.5F, 1.0F, false, 0, ISound.AttenuationType.NONE, player.getX(), player.getY(), player.getZ(), false));
-				clientProxy.playSound(new Identifier("grapplemod", "enderstaff"), GrappleConfig.getClientConf().sounds.enderstaff_sound_volume * 0.5F);
+				clientProxy.playSound(new Identifier(MODID, "enderstaff"), GrappleConfig.getClientConf().sounds.enderstaff_sound_volume * 0.5F);
 			}
 		}
 	}
@@ -286,7 +285,7 @@ public class ClientControllerManager {
 	public GrappleController createControl(int controllerId, int grapplehookEntityId, int playerId, World world, Vec pos, BlockPos blockPos, GrappleCustomization custom) {
 		GrapplehookEntity grapplehookEntity = null;
 		Entity grapplehookEntityUncast = world.getEntityById(grapplehookEntityId);
-		if (grapplehookEntityUncast != null && grapplehookEntityUncast instanceof GrapplehookEntity) {
+		if (grapplehookEntityUncast instanceof GrapplehookEntity) {
 			grapplehookEntity = (GrapplehookEntity) grapplehookEntityUncast;
 		}
 
@@ -309,7 +308,7 @@ public class ClientControllerManager {
 				if (control != null && control.getClass().equals(GrappleController.class)) {
 					GrappleController c = (GrappleController) control;
 					if (control.custom.doublehook) {
-						if (grapplehookEntity != null && grapplehookEntity instanceof GrapplehookEntity) {
+						if (grapplehookEntity instanceof GrapplehookEntity) {
 							GrapplehookEntity multiHookEntity = grapplehookEntity;
 							created = true;
 							c.addHookEntity(multiHookEntity);
@@ -334,7 +333,7 @@ public class ClientControllerManager {
 		}
 
 		if (blockPos != null) {
-			ClientControllerManager.controllerPos.put(blockPos, control);
+			controllerPos.put(blockPos, control);
 		}
 
 		registerController(playerId, control);
@@ -347,7 +346,7 @@ public class ClientControllerManager {
 		return control;
 	}
 
-	public static void registerController(int entityId, GrappleController controller) {
+	public void registerController(int entityId, GrappleController controller) {
 		if (controllers.containsKey(entityId)) {
 			controllers.get(entityId).unattach();
 		}
@@ -355,7 +354,7 @@ public class ClientControllerManager {
 		controllers.put(entityId, controller);
 	}
 
-	public static GrappleController unregisterController(int entityId) {
+	public GrappleController unregisterController(int entityId) {
 		if (controllers.containsKey(entityId)) {
 			GrappleController controller = controllers.get(entityId);
 			controllers.remove(entityId);
@@ -375,21 +374,21 @@ public class ClientControllerManager {
 		return null;
 	}
 
-	public static void receiveGrappleDetach(int id) {
+	public void receiveGrappleDetach(int id) {
 		GrappleController controller = controllers.get(id);
 		if (controller != null) {
 			controller.receiveGrappleDetach();
 		}
 	}
 
-	public static void receiveGrappleDetachHook(int id, int hookid) {
+	public void receiveGrappleDetachHook(int id, int hookid) {
 		GrappleController controller = controllers.get(id);
 		if (controller != null) {
 			controller.receiveGrappleDetachHook(hookid);
 		}
 	}
 
-	public static void receiveEnderLaunch(int id, double x, double y, double z) {
+	public void receiveEnderLaunch(int id, double x, double y, double z) {
 		GrappleController controller = controllers.get(id);
 		if (controller != null) {
 			controller.receiveEnderLaunch(x, y, z);
@@ -458,11 +457,11 @@ public class ClientControllerManager {
 			}
 		}
 
-		RocketSound sound = new RocketSound(controller, new SoundEvent(new Identifier("grapplemod", "rocket")), SoundCategory.PLAYERS);
+		RocketSound sound = new RocketSound(controller, new SoundEvent(new Identifier(MODID, "rocket")), SoundCategory.PLAYERS);
 		MinecraftClient.getInstance().getSoundManager().play(sound);
 	}
 
-	public static HashMap<BlockPos, GrappleController> controllerPos = new HashMap<>();
+	public Map<BlockPos, GrappleController> controllerPos = new HashMap<>();
 
-	public static long prevRopeJumpTime = 0;
+	public long prevRopeJumpTime = 0;
 }

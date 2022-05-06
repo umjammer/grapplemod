@@ -7,7 +7,7 @@ import com.yyon.grapplinghook.client.ClientProxyInterface.GrappleKeys;
 import com.yyon.grapplinghook.client.ClientProxyInterface.McKeys;
 import com.yyon.grapplinghook.config.GrappleConfig;
 import com.yyon.grapplinghook.entities.grapplehook.GrapplehookEntity;
-import com.yyon.grapplinghook.grapplemod;
+import static com.yyon.grapplinghook.grapplemod.LOGGER;
 import com.yyon.grapplinghook.network.GrappleEndMessage;
 import com.yyon.grapplinghook.network.PlayerMovementMessage;
 import com.yyon.grapplinghook.utils.GrappleCustomization;
@@ -74,7 +74,7 @@ public class GrappleController {
 		this.motion = Vec.motionVec(entity);
 
 		// undo friction
-		Vec newmotion = new Vec(entity.getTrackedPosition().x - entity.prevX, entity.getTrackedPosition().y - entity.prevY, entity.getTrackedPosition().z - entity.prevZ);
+		Vec newmotion = new Vec(entity.getPos().x - entity.prevX, entity.getPos().y - entity.prevY, entity.getPos().z - entity.prevZ);
 		if (newmotion.x / motion.x < 2 && motion.x / newmotion.x < 2 && newmotion.y / motion.y < 2 && motion.y / newmotion.y < 2 && newmotion.z / motion.z < 2 && motion.z / newmotion.z < 2) {
 			this.motion = newmotion;
 		}
@@ -86,7 +86,7 @@ public class GrappleController {
 			if (grapplehookEntity != null && grapplehookEntity.isAlive() && grapplehookEntity instanceof GrapplehookEntity) {
 				this.addHookEntity((GrapplehookEntity) grapplehookEntity);
 			} else {
-				grapplemod.LOGGER.warn("no hook entity");
+				LOGGER.warn("no hook entity");
 				this.unattach();
 			}
 		}
@@ -130,7 +130,7 @@ public class GrappleController {
 		Entity entity = this.entity;
 
 		if (this.attached) {
-			if(entity != null) {
+			if (entity != null) {
 				if (true) {
 					if (entity.getVehicle() != null) {
 						this.unattach();
@@ -549,10 +549,10 @@ public class GrappleController {
 		}
 
 		if (sliding && !entity.horizontalCollision) {
-			if (entity.getTrackedPosition().x - entity.prevX == 0) {
+			if (entity.getPos().x - entity.prevX == 0) {
 				this.motion.x = 0;
 			}
-			if (entity.getTrackedPosition().z - entity.prevZ == 0) {
+			if (entity.getPos().z - entity.prevZ == 0) {
 				this.motion.z = 0;
 			}
 		}
@@ -568,7 +568,7 @@ public class GrappleController {
 				}
 			} else {
 				if (this.motion.y > 0) {
-					if (entity.prevY == entity.getTrackedPosition().y) {
+					if (entity.prevY == entity.getPos().y) {
 						this.motion.y = 0;
 					}
 				}
@@ -665,7 +665,7 @@ public class GrappleController {
 		if (spherevec != null && spherevec.y > 0) {
 			jumppower = 0;
 		}
-		if ((hookEntity != null) && hookEntity.r < 1 && (player.getTrackedPosition().y < hookEntity.getTrackedPosition().y)) {
+		if ((hookEntity != null) && hookEntity.r < 1 && (player.getPos().y < hookEntity.getPos().y)) {
 			jumppower = maxjump;
 		}
 
@@ -688,7 +688,7 @@ public class GrappleController {
 	}
 
 	public void updateServerPos() {
-		new PlayerMovementMessage(this.entityId, this.entity.getTrackedPosition().x, this.entity.getTrackedPosition().y, this.entity.getTrackedPosition().z, this.entity.getVelocity().x, this.entity.getVelocity().y, this.entity.getVelocity().z).send();
+		new PlayerMovementMessage(this.entityId, this.entity.getPos().x, this.entity.getPos().y, this.entity.getPos().z, this.entity.getVelocity().x, this.entity.getVelocity().y, this.entity.getVelocity().z).send();
 	}
 
 	// Vector stuff:

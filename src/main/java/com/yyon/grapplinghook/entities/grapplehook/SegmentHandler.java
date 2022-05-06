@@ -155,10 +155,10 @@ public class SegmentHandler {
 		segmentTopSides.remove(index);
 
 		if (!this.world.isClient()) {
-			SegmentMessage addmessage = new SegmentMessage(this.hookEntity.getControlId(), false, index, new Vec(0, 0, 0), Direction.DOWN, Direction.DOWN);
+			SegmentMessage addmessage = new SegmentMessage(this.hookEntity.getId(), false, index, new Vec(0, 0, 0), Direction.DOWN, Direction.DOWN);
 			Vec playerpoint = Vec.positionVec(this.hookEntity.shootingEntity);
 			// world.getChunk(new BlockPos(playerpoint.x, playerpoint.y, playerpoint.z)); // TODO
-			addmessage.send((ServerPlayerEntity) this.hookEntity.shootingEntity);
+			addmessage.send(this.hookEntity.shootingEntity);
 		}
 	}
 
@@ -284,10 +284,10 @@ public class SegmentHandler {
         segmentTopSides.add(index, topside);
         
 		if (!this.world.isClient()) {
-			SegmentMessage addmessage = new SegmentMessage(this.hookEntity.getControlId(), true, index, bendpoint, topside, bottomside);
+			SegmentMessage addmessage = new SegmentMessage(this.hookEntity.getId(), true, index, bendpoint, topside, bottomside);
 			Vec playerpoint = Vec.positionVec(this.hookEntity.shootingEntity);
 			// world.getChunk(new BlockPos(playerpoint.x, playerpoint.y, playerpoint.z)); TODO
-			addmessage.send((ServerPlayerEntity) this.hookEntity.shootingEntity);
+			addmessage.send(this.hookEntity.shootingEntity);
 		}
 	}
 

@@ -66,7 +66,7 @@ public class GrapplehookEntity extends ThrownItemEntity {
 
 	public GrapplehookEntity(World world, LivingEntity shooter,
 			boolean righthand, GrappleCustomization customization, boolean isdouble) {
-		super(CommonSetup.grapplehookEntityType, shooter.getTrackedPosition().x, shooter.getTrackedPosition().y + shooter.getEyeHeight(shooter.getPose()), shooter.getTrackedPosition().z, world);
+		super(CommonSetup.grapplehookEntityType, shooter.getPos().x, shooter.getPos().y + shooter.getEyeHeight(shooter.getPose()), shooter.getPos().z, world);
 
 		this.shootingEntity = shooter;
 		this.shootingEntityID = this.shootingEntity.getId();
@@ -437,11 +437,11 @@ public class GrapplehookEntity extends ThrownItemEntity {
 		this.firstAttach = true;
 		serverControllerManager.attached.add(this.shootingEntityID);
 
-		new GrappleAttachMessage(this.getId(), this.getTrackedPosition().x, this.getTrackedPosition().y, this.getTrackedPosition().z, this.getControlId(), this.shootingEntityID, blockpos, this.segmentHandler.segments, this.segmentHandler.segmentTopSides, this.segmentHandler.segmentBottomSides, this.customization).send((ServerPlayerEntity) shootingEntity);
+		new GrappleAttachMessage(this.getId(), this.getPos().x, this.getPos().y, this.getPos().z, this.getControlId(), this.shootingEntityID, blockpos, this.segmentHandler.segments, this.segmentHandler.segmentTopSides, this.segmentHandler.segmentBottomSides, this.customization).send(shootingEntity);
 
-		GrappleAttachPosMessage msg = new GrappleAttachPosMessage(this.getId(), this.getTrackedPosition().x, this.getTrackedPosition().y, this.getTrackedPosition().z);
-		//this.world.getChunk(new BlockPos(this.getTrackedPosition().x, this.getTrackedPosition().y, this.getTrackedPosition().z));
-		msg.send((ServerPlayerEntity) shootingEntity);
+		GrappleAttachPosMessage msg = new GrappleAttachPosMessage(this.getId(), this.getPos().x, this.getPos().y, this.getPos().z);
+		//this.world.getChunk(new BlockPos(this.getPos().x, this.getPos().y, this.getPos().z));
+		msg.send(shootingEntity);
 	}
 
 	public void clientAttach(double x, double y, double z) {
@@ -460,7 +460,7 @@ public class GrapplehookEntity extends ThrownItemEntity {
         return (float) this.customization.hookgravity * 0.1F;
     }
 
-	public int getControlId() {
+	private int getControlId() {
 		return GrapplemodUtils.GRAPPLEID;
 	}
 

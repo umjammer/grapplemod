@@ -143,8 +143,7 @@ public class AirfrictionController extends GrappleController {
 				}
 			}
 
-			if (entity instanceof LivingEntity) {
-				LivingEntity entityliving = (LivingEntity) entity;
+			if (entity instanceof LivingEntity entityliving) {
 				if (entityliving.isFallFlying()) {
 					this.unattach();
 				}

@@ -49,7 +49,7 @@ public abstract class ServerPlayerEntityMixin {
                 GrapplehookItem.grapplehookEntitiesLeft.remove(entity);
                 GrapplehookItem.grapplehookEntitiesRight.remove(entity);
 
-                new GrappleDetachMessage(id).send((ServerPlayerEntity) entity);
+                new GrappleDetachMessage(id).send(entity);
             }
         }
     }

@@ -28,8 +28,8 @@ public abstract class KeyboardMixin {
         }
 
         GrappleController controller = null;
-        if (ClientControllerManager.controllers.containsKey(player.getId())) {
-            controller = ClientControllerManager.controllers.get(player.getId());
+        if (clientControllerManager.controllers.containsKey(player.getId())) {
+            controller = clientControllerManager.controllers.get(player.getId());
         }
 
         if (MinecraftClient.getInstance().options.jumpKey.isPressed()) {
@@ -40,6 +40,6 @@ public abstract class KeyboardMixin {
             }
         }
 
-        clientControllerManager.checkSlide(MinecraftClient.getInstance().player);
+        clientControllerManager.checkSlide(player);
     }
 }

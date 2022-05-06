@@ -32,7 +32,7 @@ public class ForcefieldController extends GrappleController {
 
 					Vec blockpush = checkRepel(playerpos, entity.world);
 					blockpush.mult_ip(0.5);
-					blockpush = new Vec(blockpush.x*0.5, blockpush.y*2, blockpush.z*0.5);
+					blockpush = new Vec(blockpush.x * 0.5, blockpush.y * 2, blockpush.z * 0.5);
 					this.motion.add_ip(blockpush);
 
 					if (!entity.isOnGround()) {
