@@ -91,7 +91,7 @@ public class ClientTickEvent {
             BlockPos pos = bray.getBlockPos();
             BlockState state = player.world.getBlockState(pos);
 
-            return (state.getBlock() == CommonSetup.grappleModifierBlock);
+            return state.getBlock() == CommonSetup.grappleModifierBlock;
         }
         return false;
     }

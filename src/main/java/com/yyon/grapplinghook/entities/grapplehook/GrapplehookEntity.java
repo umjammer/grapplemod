@@ -18,6 +18,7 @@
 package com.yyon.grapplinghook.entities.grapplehook;
 
 import java.util.HashMap;
+import java.util.Map;
 import javax.annotation.Nonnull;
 
 import com.yyon.grapplinghook.common.CommonSetup;
@@ -25,12 +26,12 @@ import com.yyon.grapplinghook.config.GrappleConfig;
 import com.yyon.grapplinghook.config.GrappleConfigUtils;
 import com.yyon.grapplinghook.network.GrappleAttachMessage;
 import com.yyon.grapplinghook.network.GrappleAttachPosMessage;
-import com.yyon.grapplinghook.server.ServerControllerManager;
 import com.yyon.grapplinghook.utils.GrappleCustomization;
 import com.yyon.grapplinghook.utils.GrapplemodUtils;
 import com.yyon.grapplinghook.utils.Vec;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -41,7 +42,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.Packet;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -53,6 +53,7 @@ import net.minecraft.world.World;
 
 import static com.yyon.grapplinghook.client.ClientSetup.clientProxy;
 import static com.yyon.grapplinghook.common.CommonSetup.serverControllerManager;
+import static com.yyon.grapplinghook.grapplemod.LOGGER;
 
 
 public class GrapplehookEntity extends ThrownItemEntity {
@@ -116,11 +117,11 @@ public class GrapplehookEntity extends ThrownItemEntity {
 	@Override
 	public void writeCustomDataToNbt(NbtCompound nbt) {
 		super.writeCustomDataToNbt(nbt);
-		nbt.putInt("shootingEntity", this.shootingEntity != null ? this.shootingEntity.getId() : 0);
+		nbt.putInt("shootingEntityID", this.shootingEntity != null ? this.shootingEntity.getId() : 0);
 		nbt.putBoolean("rightHand", this.rightHand);
 		nbt.putBoolean("isDouble", this.isDouble);
 	    if (this.customization == null) {
-	    	System.out.println("error: customization null");
+			LOGGER.warn("error: customization null");
 	    }
 	    nbt.put("customization", customization.writeNBT());
     }
@@ -128,7 +129,7 @@ public class GrapplehookEntity extends ThrownItemEntity {
 	@Override
 	public void readCustomDataFromNbt(NbtCompound nbt) {
 		super.readCustomDataFromNbt(nbt);
-    	this.shootingEntityID = nbt.getInt("shootingEntity");
+    	this.shootingEntityID = nbt.getInt("shootingEntityID");
 	    this.shootingEntity = this.world.getEntityById(this.shootingEntityID);
 	    this.rightHand = nbt.getBoolean("rightHand");
 	    this.isDouble = nbt.getBoolean("isDouble");
@@ -136,10 +137,10 @@ public class GrapplehookEntity extends ThrownItemEntity {
 		this.customization.loadNBT(nbt.getCompound("customization"));
     }
 
-//	@Override
-//	public void defineSynchedData() {
-//		super.defineSynchedData();
-//	}
+	@Override
+	public void initDataTracker() {
+		super.initDataTracker();
+	}
 
 	public void removeServer() {
 		this.remove(RemovalReason.DISCARDED);
@@ -172,7 +173,7 @@ public class GrapplehookEntity extends ThrownItemEntity {
 			if (this.shootingEntity != null)  {
 				if (!this.attached) {
 					if (this.segmentHandler.hookPastBend(this.r)) {
-						System.out.println("around bend");
+						LOGGER.info("around bend");
 						Vec farthest = this.segmentHandler.getFarthest();
 						this.serverAttach(this.segmentHandler.getBendBlock(1), farthest, null);
 					}
@@ -379,7 +380,7 @@ public class GrapplehookEntity extends ThrownItemEntity {
 
 					this.serverAttach(blockpos, vec3, blockhit.getSide());
 				} else {
-					System.out.println("unknown impact?");
+					LOGGER.warn("unknown impact?");
 				}
 			}
 		}
@@ -390,7 +391,7 @@ public class GrapplehookEntity extends ThrownItemEntity {
 		return CommonSetup.grapplingHookItem;
 	}
 
-	public void serverAttach(BlockPos blockpos, Vec pos, Direction sideHit) {
+	private void serverAttach(BlockPos blockpos, Vec pos, Direction sideHit) {
 		if (this.attached) {
 			return;
 		}
@@ -474,7 +475,7 @@ public class GrapplehookEntity extends ThrownItemEntity {
 	}
 
 	// used for magnet attraction
-    public BlockPos check(Vec p, HashMap<BlockPos, Boolean> checkedset) {
+	private BlockPos check(Vec p, Map<BlockPos, Boolean> checkedset) {
     	int radius = (int) Math.floor(this.customization.attractradius);
     	BlockPos closestpos = null;
     	double closestdist = 0;
@@ -498,7 +499,7 @@ public class GrapplehookEntity extends ThrownItemEntity {
 	}
 
 	// used for magnet attraction
-	public boolean hasBlock(BlockPos pos, HashMap<BlockPos, Boolean> checkedset) {
+	private boolean hasBlock(BlockPos pos, Map<BlockPos, Boolean> checkedset) {
     	if (!checkedset.containsKey(pos)) {
     		boolean isblock = false;
 	    	BlockState blockstate = this.world.getBlockState(pos);
@@ -522,7 +523,17 @@ public class GrapplehookEntity extends ThrownItemEntity {
 	@Nonnull
 	@Override
 	public Packet<?> createSpawnPacket() {
-		  return new EntitySpawnS2CPacket(this);
+		return new EntitySpawnS2CPacket(this);
+	}
+
+	@Override
+	public void onSpawnPacket(EntitySpawnS2CPacket packet) {
+		super.onSpawnPacket(packet);
+		// LESSON: IEntityAdditionalSpawnData fill follows when #onSpawnPacket()
+		// so in fabric, we need to fill somehow.
+		// this is ad-hoc
+		this.shootingEntity = MinecraftClient.getInstance().player;
+		this.shootingEntityID = MinecraftClient.getInstance().player.getId();
 	}
 
 	@Override

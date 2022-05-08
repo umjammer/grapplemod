@@ -36,9 +36,9 @@ Currently, the versions of this mod for Minecraft 1.18.2.
 
 ## TODO
 
- * not works correctly
-   * about key bindings (`NonConflictingKeyBinding`)
-   * tooltip CR, LF
+ * ~~not works correctly~~ grapple engine might be working!
+ * **key bindings** (`NonConflictingKeyBinding`)
+ * tooltip CR, LF
  * test survival mode
    * recipe
    * enchantment

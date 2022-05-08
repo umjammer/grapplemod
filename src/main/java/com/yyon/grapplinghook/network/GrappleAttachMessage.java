@@ -144,9 +144,8 @@ public class GrappleAttachMessage implements BaseMessageClient {
 
         	Entity player = world.getEntityById(this.entityId);
         	segmenthandler.forceSetPos(new Vec(this.x, this.y, this.z), Vec.positionVec(player));
-    	} else {
     	}
 
-    	clientProxy.createControl(this.controlId, this.id, this.entityId, world, new Vec(this.x, this.y, this.z), this.blockPos, this.custom);
+        clientProxy.createControl(this.controlId, this.id, this.entityId, world, new Vec(this.x, this.y, this.z), this.blockPos, this.custom);
     }
 }

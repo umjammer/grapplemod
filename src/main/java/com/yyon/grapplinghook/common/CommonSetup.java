@@ -125,6 +125,7 @@ public class CommonSetup implements ModInitializer {
 				HOOK_ENTITY_TYPE_ID,
 				EntityType.Builder.create((EntityType.EntityFactory<GrapplehookEntity>) GrapplehookEntity::new, SpawnGroup.MISC)
 						.setDimensions(0.25F, 0.25F)
+						.maxTrackingRange(4).trackingTickInterval(10)
 						.build(HOOK_ENTITY_TYPE_ID));
 
 		// config
