@@ -20,7 +20,8 @@ public interface BaseMessageClient {
 	/** to client */
 	default void send(Entity entity) {
 		if (!(entity instanceof ServerPlayerEntity player)) {
-			LOGGER.warn("entity is not a player: " + this.getClass().getName());
+			LOGGER.warn("entity is not a player: " + entity + ", " + this.getClass().getName());
+new Exception().printStackTrace();
 		} else {
 			player.networkHandler.sendPacket(new CustomPayloadS2CPacket(getIdentifier(), toPacket()));
 		}

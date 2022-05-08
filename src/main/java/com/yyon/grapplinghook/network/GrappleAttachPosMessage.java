@@ -25,6 +25,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 
+import static com.yyon.grapplinghook.grapplemod.LOGGER;
 import static com.yyon.grapplinghook.grapplemod.MODID;
 
 public class GrappleAttachPosMessage implements BaseMessageClient {
@@ -43,6 +44,7 @@ public class GrappleAttachPosMessage implements BaseMessageClient {
 
     public GrappleAttachPosMessage(PacketByteBuf buf) {
         this.id = buf.readInt();
+LOGGER.info("GrappleAttachPosMessage::<init>: grapple entity id: " + id);
         this.x = buf.readDouble();
         this.y = buf.readDouble();
         this.z = buf.readDouble();
@@ -58,6 +60,7 @@ public class GrappleAttachPosMessage implements BaseMessageClient {
     public PacketByteBuf toPacket() {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
     	buf.writeInt(this.id);
+LOGGER.info("GrappleAttachPosMessage::toPacket: grapple entity id: " + id);
         buf.writeDouble(this.x);
         buf.writeDouble(this.y);
         buf.writeDouble(this.z);
@@ -65,10 +68,12 @@ public class GrappleAttachPosMessage implements BaseMessageClient {
     }
 
     public void processMessage() {
-    	World world = MinecraftClient.getInstance().world;
-    	Entity grapple = world.getEntityById(this.id);
-    	if (grapple instanceof GrapplehookEntity) {
-        	((GrapplehookEntity) grapple).setAttachPos(this.x, this.y, this.z);
-    	}
+        World world = MinecraftClient.getInstance().world;
+    	Entity entity = world.getEntityById(this.id); // TODO null
+    	if (entity instanceof GrapplehookEntity grapple) {
+        	grapple.setAttachPos(this.x, this.y, this.z);
+    	} else {
+LOGGER.warn("GrappleAttachPosMessage::processMessage: entity is not grapple: " + world.isClient + ", " + this.id + ", world: " + world.hashCode());
+        }
     }
 }

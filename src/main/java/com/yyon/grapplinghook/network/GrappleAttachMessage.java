@@ -25,6 +25,7 @@ import com.yyon.grapplinghook.utils.GrappleCustomization;
 import com.yyon.grapplinghook.utils.Vec;
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
@@ -33,6 +34,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 
 import static com.yyon.grapplinghook.client.ClientSetup.clientProxy;
+import static com.yyon.grapplinghook.grapplemod.LOGGER;
 import static com.yyon.grapplinghook.grapplemod.MODID;
 
 
@@ -59,6 +61,7 @@ public class GrappleAttachMessage implements BaseMessageClient {
 
     public GrappleAttachMessage(PacketByteBuf buf) {
         this.id = buf.readInt();
+LOGGER.info("GrappleAttachMessage::<init>: grapple entity id: " + id);
         this.x = buf.readDouble();
         this.y = buf.readDouble();
         this.z = buf.readDouble();
@@ -73,9 +76,9 @@ public class GrappleAttachMessage implements BaseMessageClient {
         this.custom.readFromBuf(buf);
 
         int size = buf.readInt();
-        this.segments = new LinkedList<Vec>();
-        this.segmentBottomSides = new LinkedList<Direction>();
-        this.segmentTopSides = new LinkedList<Direction>();
+        this.segments = new LinkedList<>();
+        this.segmentBottomSides = new LinkedList<>();
+        this.segmentTopSides = new LinkedList<>();
 
         segments.add(new Vec(0, 0, 0));
         segmentBottomSides.add(null);
@@ -110,6 +113,7 @@ public class GrappleAttachMessage implements BaseMessageClient {
     public PacketByteBuf toPacket() {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
     	buf.writeInt(this.id);
+LOGGER.info("GrappleAttachMessage::toPacket: grapple entity id: " + id);
         buf.writeDouble(this.x);
         buf.writeDouble(this.y);
         buf.writeDouble(this.z);
@@ -118,9 +122,9 @@ public class GrappleAttachMessage implements BaseMessageClient {
         buf.writeInt(this.blockPos.getX());
         buf.writeInt(this.blockPos.getY());
         buf.writeInt(this.blockPos.getZ());
-        
+
         this.custom.writeToBuf(buf);
-        
+
         buf.writeInt(this.segments.size());
         for (int i = 1; i < this.segments.size()-1; i++) {
         	buf.writeDouble(this.segments.get(i).x);
@@ -133,11 +137,11 @@ public class GrappleAttachMessage implements BaseMessageClient {
     }
 
     public void processMessage() {
-		World world = MinecraftClient.getInstance().world;
-    	Entity grapple = world.getEntityById(this.id);
-    	if (grapple instanceof GrapplehookEntity) {
-        	((GrapplehookEntity) grapple).clientAttach(this.x, this.y, this.z);
-        	SegmentHandler segmenthandler = ((GrapplehookEntity) grapple).segmentHandler;
+        ClientWorld world = MinecraftClient.getInstance().world;
+    	Entity entity = world.getEntityById(this.id); // TODO null
+    	if (entity instanceof GrapplehookEntity grapple) {
+        	grapple.clientAttach(this.x, this.y, this.z);
+        	SegmentHandler segmenthandler = grapple.segmentHandler;
         	segmenthandler.segments = this.segments;
         	segmenthandler.segmentBottomSides = this.segmentBottomSides;
         	segmenthandler.segmentTopSides = this.segmentTopSides;
@@ -145,6 +149,12 @@ public class GrappleAttachMessage implements BaseMessageClient {
         	Entity player = world.getEntityById(this.entityId);
         	segmenthandler.forceSetPos(new Vec(this.x, this.y, this.z), Vec.positionVec(player));
     	} else {
+LOGGER.warn("GrappleAttachMessage::processMessage: entity is not grapple: " + world.isClient + ", " + this.id + ", world: " + world.hashCode() + ", lookup: " + world.getEntityLookup().hashCode());
+//world.getEntities().forEach(e -> {
+// if (e.getId() == id) {
+//  LOGGER.info("GrappleAttachMessage::processMessage: " + e + ", world: " + world.hashCode());
+// }
+//});
     	}
 
     	clientProxy.createControl(this.controlId, this.id, this.entityId, world, new Vec(this.x, this.y, this.z), this.blockPos, this.custom);

@@ -27,7 +27,6 @@ import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 
-import static com.yyon.grapplinghook.client.ClientSetup.clientControllerManager;
 import static com.yyon.grapplinghook.common.CommonSetup.forcefieldItem;
 import static com.yyon.grapplinghook.common.CommonSetup.grapplehookEntityType;
 import static com.yyon.grapplinghook.common.CommonSetup.grapplingHookItem;

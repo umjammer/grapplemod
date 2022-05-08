@@ -515,7 +515,7 @@
     "text.autoconfig.grapplemod.option.options.grapplinghook.custom.rocket.rocket_vertical_angle.max_upgraded": "max_upgraded",
     "text.autoconfig.grapplemod.option.options.grapplinghook.custom.rocket.rocket_vertical_angle.min": "min",
     "text.autoconfig.grapplemod.option.options.grapplinghook.custom.rocket.rocket_vertical_angle.min_upgraded": "min_upgraded",
-    
+
     "grapplemod.upgradecategories.rope": "Rope",
     "grapplemod.upgradecategories.throw": "Hook Thrower",
     "grapplemod.upgradecategories.motor": "Motor",
@@ -526,6 +526,8 @@
     "grapplemod.upgradecategories.double": "Double Hook",
     "grapplemod.upgradecategories.limits": "Limits",
     "grapplemod.upgradecategories.rocket": "Rocket",
-    
-    "grapplemod.jei_modifier_text": "Add upgrade(s), open\ninterface to customize,\nthen apply to hook"
+
+    "grapplemod.jei_modifier_text": "Add upgrade(s), open\ninterface to customize,\nthen apply to hook",
+
+    "entity.grapplemod.grapplehook": "Grapple Hook"
 }

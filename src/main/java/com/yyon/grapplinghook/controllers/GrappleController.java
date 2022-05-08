@@ -83,6 +83,7 @@ public class GrappleController {
 
 		if (grapplehookEntityId != -1) {
 			Entity grapplehookEntity = world.getEntityById(grapplehookEntityId);
+LOGGER.info("entity: " + grapplehookEntity);
 			if (grapplehookEntity != null && grapplehookEntity.isAlive() && grapplehookEntity instanceof GrapplehookEntity) {
 				this.addHookEntity((GrapplehookEntity) grapplehookEntity);
 			} else {

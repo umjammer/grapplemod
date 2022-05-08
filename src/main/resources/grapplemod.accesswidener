@@ -1,3 +1,9 @@
 accessWidener    v1    named
 
+# forge event
 accessible    field    net/minecraft/client/render/Camera    pitch F
+
+# debug
+accessible    method    net/minecraft/client/world/ClientWorld    getEntities         ()Ljava/lang/Iterable;
+accessible    field    net/minecraft/client/world/ClientWorld    entityManager     Lnet/minecraft/client/world/ClientEntityManager;
+accessible    method    net/minecraft/client/world/ClientWorld    getEntityLookup     ()Lnet/minecraft/world/entity/EntityLookup;
